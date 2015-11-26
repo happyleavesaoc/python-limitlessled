@@ -156,3 +156,7 @@ Pull requests welcome. Some areas for enhancement include
 
 - Discovery
 - Pairing
+
+## Disclaimer
+
+Not affiliated with LimitlessLED and/or marketers/manufacturers of rebranded devices.
