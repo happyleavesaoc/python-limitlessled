@@ -6,12 +6,30 @@
 ### Configure
 Your bridge(s) must be set up and bulbs joined prior to using this module.
 
-### Control
-
-Get a group:
+Group names can be any string, but must be unique amongst all bridges.
 ```python
+from limitlessled.bridge import Bridge
+from limitlessled.group.rgbw import RGBW
+from limitlessled.group.white import WHITE
+
+bridge = Bridge('<your bridge ip address>')
+bridge.add_group(1, 'bedroom', RGBW)
+# A group number can support two groups as long as the types differ
+bridge.add_group(2, 'bathroom', WHITE)
+bridge.add_group(2, 'living_room', RGBW)
+```
+
+Get access to groups either via the return value of `add_group`, or with the `LimitlessLED` object.
+
+```python
+bedroom = bridge.add_group(1, 'bedroom', RGBW)
+# or
+limitlessled = LimitlessLED()
+limitlessled.add_bridge(bridge)
 bedroom = limitlessled.group('bedroom')
 ```
+
+### Control
 
 Turn on:
 ```python
@@ -47,8 +65,11 @@ bedroom.transition(brightness=1.0, color=Color(0, 255, 0)) # rgbw groups
 
 #### Pipelines
 
-Pipelines specify a sequence of stages, each stage being a command. Pipelines are not executed until called as an argument to a group's `start` method.
+Pipelines specify a sequence of stages, each stage being a command. Pipelines are not executed until called as an argument to a group's `enqueue` method.
+
 Pipelines are executed in a thread (per group). Multiple pipelines can be started on a group; they will queue and execute in the order received.
+
+A bridge can run multiple pipelines concurrently provided they are on different groups. Note that concurrency is achieved by interleaving commands, and as a consequence, pipeline execution can take longer than specified and each pipeline may use fewer transition steps depending on the number of concurrently executing pipelines.
 
 ```python
 from limitlessled import Color
@@ -60,7 +81,7 @@ pipeline = Pipeline() \
     .color(0, 0, 255) \
     .transition(color=Color(255, 0, 0))
     
-bedroom.start(pipeline)
+bedroom.enqueue(pipeline)
 ```
 
 Stop the currently-running pipeline:
@@ -97,12 +118,12 @@ Pipeline().color(255, 0, 0)
 
 Transition
 ```python
-Pipeline.transition(...)
+Pipeline().transition(...)
 ```
 
 Wait
 ```python
-Pipeline.wait(4) # in seconds
+Pipeline.()wait(4) # in seconds
 ```
 
 Repeat
@@ -135,3 +156,7 @@ Pull requests welcome. Some areas for enhancement include
 
 - Discovery
 - Pairing
+
+## Disclaimer
+
+Not affiliated with LimitlessLED and/or marketers/manufacturers of rebranded devices.
