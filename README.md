@@ -1,6 +1,8 @@
 # python-limitlessled
 
 `python-limitlessled` controls LimitlessLED bridges. It supports `white` and `rgbw` bulb groups.
+## Install
+`pip install limitlessled`
 
 ## Usage
 ### Configure
