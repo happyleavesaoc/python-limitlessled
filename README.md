@@ -118,12 +118,12 @@ Pipeline().color(255, 0, 0)
 
 Transition
 ```python
-Pipeline.transition(...)
+Pipeline().transition(...)
 ```
 
 Wait
 ```python
-Pipeline.wait(4) # in seconds
+Pipeline.()wait(4) # in seconds
 ```
 
 Repeat
