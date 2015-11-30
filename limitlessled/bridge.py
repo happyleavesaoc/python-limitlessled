@@ -5,7 +5,7 @@ import socket
 import time
 import threading
 
-from limitlessled import MIN_WAIT, REPS
+from limitlessled import MIN_WAIT, DEFAULT_REPS
 from limitlessled.group.rgbw import RgbwGroup, RGBW
 from limitlessled.group.white import WhiteGroup, WHITE
 
@@ -15,6 +15,7 @@ BRIDGE_VERSION = 5
 BRIDGE_SHORT_VERSION_MIN = 3
 BRIDGE_LONG_BYTE = 0x55
 SELECT_WAIT = 0.025
+DEFAULT_PRIORITY = 10
 
 
 def group_factory(bridge, number, name, led_type):
@@ -37,7 +38,8 @@ def group_factory(bridge, number, name, led_type):
 class Bridge(object):
     """ Represents a LimitlessLED bridge. """
 
-    def __init__(self, ip, port=BRIDGE_PORT, version=BRIDGE_VERSION):
+    def __init__(self, ip, port=BRIDGE_PORT, version=BRIDGE_VERSION, 
+            reps=DEFAULT_REPS):
         """ Initialize bridge.
 
         Bridge version 3 through 5 (latest as of this release)
@@ -50,16 +52,17 @@ class Bridge(object):
         :param version: Bridge version.
         """
         self.wait = MIN_WAIT
-        self.reps = REPS
+        self.reps = reps
         self.groups = []
         self.ip = ip
         self.version = version
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.connect((ip, port))
-        self._command_queue = queue.Queue()
+        self._command_queue = queue.PriorityQueue()
         self._lock = threading.Lock()
         self.active = 0
         self._selected_number = None
+        self._seqnum = 0
         # Start queue consumer thread.
         consumer = threading.Thread(target=self._consume)
         consumer.daemon = True
@@ -87,7 +90,8 @@ class Bridge(object):
         self.groups.append(group)
         return group
 
-    def send(self, group, command, reps=REPS, wait=MIN_WAIT, select=False):
+    def send(self, group, command, reps=None, wait=MIN_WAIT, select=False, 
+            priority=DEFAULT_PRIORITY):
         """ Send a command to the physical bridge.
 
         :param group: Run on this group.
@@ -96,8 +100,14 @@ class Bridge(object):
         :param wait: Wait time in seconds.
         :param select: Select group if necessary.
         """
+        if reps is None:
+            reps = self.reps
+            
+        seqnum = self._seqnum
+        self._seqnum += 1
         # Enqueue the command.
-        self._command_queue.put((group, command, reps, wait, select))
+        self._command_queue.put((priority, seqnum, group, command, reps, wait, 
+                                 select))
         # Wait before accepting another command.
         # This keeps indvidual groups relatively synchronized.
         sleep = reps * wait * self.active
@@ -120,7 +130,8 @@ class Bridge(object):
         """
         while True:
             # Get command from queue.
-            (group, command, reps, wait, select) = self._command_queue.get()
+            (priority, seqnum, group, command, reps, wait, select) = \
+                self._command_queue.get()
             # Select group if a different group is currently selected.
             if select and self._selected_number != group.number:
                 self._socket.send(bytearray(group.get_select_cmd()))

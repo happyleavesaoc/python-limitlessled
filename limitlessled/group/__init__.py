@@ -5,11 +5,11 @@ import time
 import threading
 import queue
 
-from limitlessled import MIN_WAIT, REPS
+from limitlessled import MIN_WAIT
 from limitlessled.pipeline import Pipeline, PipelineQueue
 
 
-def rate(wait=MIN_WAIT, reps=REPS):
+def rate(wait=MIN_WAIT, reps=None):
     """ Rate limit a command function.
 
     :param wait: How long to wait between commands.
@@ -60,7 +60,6 @@ class Group(object):
         self._thread.daemon = True
         self._thread.start()
         self.wait = MIN_WAIT
-        self.reps = REPS
 
     @property
     def on(self):
@@ -91,7 +90,7 @@ class Group(object):
         :param select: If command requires selection.
         """
         self._bridge.send(self, cmd, wait=self.wait,
-                          reps=self.reps, select=select)
+                          reps=self.bridge.reps, select=select)
 
     def enqueue(self, pipeline):
         """ Start a pipeline.
@@ -114,7 +113,7 @@ class Group(object):
         :returns: Wait in seconds.
         """
         wait = (duration / commands) - \
-               (self.wait * self.reps * self._bridge.active)
+               (self.wait * self.bridge.reps * self._bridge.active)
         if wait < 0:
             wait = 0
         return wait
@@ -128,7 +127,7 @@ class Group(object):
         :returns: Steps scaled to time and total.
         """
         return math.ceil(duration /
-                         (self.wait * self.reps * self._bridge.active) *
+                         (self.wait * self.bridge.reps * self._bridge.active) *
                          (steps / total))
 
     def __str__(self):

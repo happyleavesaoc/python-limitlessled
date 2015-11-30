@@ -11,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # Various constants.
 MIN_WAIT = 0.1
-REPS = 3
+DEFAULT_REPS = 3
 MAX_GROUPS = 4
 
 
