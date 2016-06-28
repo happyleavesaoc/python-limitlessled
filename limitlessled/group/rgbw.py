@@ -162,8 +162,8 @@ class RgbwGroup(Group):
         if color is not None:
             c_steps = abs(util.rgb_to_hue(*self.color)
                           - util.rgb_to_hue(*color))
-        # Compute ideal step amount.
-        total = c_steps + b_steps
+        # Compute ideal step amount (at least one).
+        total = max(c_steps + b_steps, 1)
         # Calculate wait.
         wait = self._wait(duration, total)
         # Scale down steps if no wait time.
