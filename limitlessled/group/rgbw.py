@@ -157,11 +157,14 @@ class RgbwGroup(Group):
         if brightness is not None:
             b_steps = steps(self.brightness,
                             brightness, BRIGHTNESS_STEPS)
+            b_start = self.brightness
         # Calculate color steps.
         c_steps = 0
         if color is not None:
             c_steps = abs(util.rgb_to_hue(*self.color)
                           - util.rgb_to_hue(*color))
+            c_start = rgb_to_hsv(*self._color)
+            c_end = rgb_to_hsv(*color)
         # Compute ideal step amount (at least one).
         total = max(c_steps + b_steps, 1)
         # Calculate wait.
@@ -169,11 +172,6 @@ class RgbwGroup(Group):
         # Scale down steps if no wait time.
         if wait == 0:
             total = self._scaled_steps(duration, total, total)
-        # Calculate start and end.
-        if total != b_steps:
-            c_start = rgb_to_hsv(*self._color)
-            c_end = rgb_to_hsv(*color)
-        b_start = self.brightness
         # Perform transition.
         j = 0
         for i in range(total):
