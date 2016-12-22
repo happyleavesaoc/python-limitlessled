@@ -11,56 +11,24 @@ from limitlessled.util import steps
 
 
 RGBW = 'rgbw'
-HUE_STEPS = 255
-BRIGHTNESS_STEPS = 25
-ON_BYTE = 0x45
-OFF_BYTE = 0x46
+RGBWW = 'rgbww'
+BRIDGE_LED = 'bridge-led'
 RGB_WHITE = Color(255, 255, 255)
-
-
-def offset(byte, index):
-    """ Calcuate group command offset.
-
-    :param byte: Base byte.
-    :param index: Group index.
-    :returns: Appropriate byte for group.
-    """
-    return byte + (index * 2)
 
 
 class RgbwGroup(Group):
     """ RGBW LimitlessLED group. """
 
-    def __init__(self, bridge, number, name):
+    def __init__(self, bridge, number, name, led_type=RGBW):
         """ Initialize RGBW group.
 
         :param bridge: Associated bridge.
         :param number: Group number (1-4).
         :param name: Group name.
+        :param led_type: The type of the led. (RGBW or RGBWW)
         """
-        super().__init__(bridge, number, name)
+        super().__init__(bridge, number, name, led_type)
         self._color = RGB_WHITE
-
-    @property
-    def on(self):
-        return super(RgbwGroup, self).on
-
-    @on.setter
-    def on(self, state):
-        """ Turn on or off.
-
-        :param state: True (on) or False (off).
-        """
-        self._on = state
-        byte = OFF_BYTE
-        if state:
-            byte = ON_BYTE
-        cmd = [offset(byte, self._index), 0x00]
-        self.send(cmd)
-
-    def get_select_cmd(self):
-        """ Get selection command bytes. """
-        return [offset(ON_BYTE, self._index), 0x00]
 
     @property
     def color(self):
@@ -82,14 +50,13 @@ class RgbwGroup(Group):
             self.white()
             return
         self._color = color
-        hue = util.rgb_to_hue(*color)
-        cmd = [0x40, hue]
+        cmd = self.command_set.color(color)
         self.send(cmd, select=True)
 
     def white(self):
         """ Set color to white. """
         self._color = RGB_WHITE
-        cmd = [offset(0xC5, self._index), 0x00]
+        cmd = self.command_set.white()
         self.send(cmd, select=True)
 
     @property
@@ -110,8 +77,7 @@ class RgbwGroup(Group):
             raise ValueError("Brightness must be a percentage "
                              "represented as decimal 0-1.0")
         self._brightness = brightness
-        actual = math.ceil(brightness * BRIGHTNESS_STEPS) + 2
-        cmd = [0x4E, actual]
+        cmd = self.command_set.brightness(brightness)
         self.send(cmd, select=True)
 
     def transition(self, duration, color=None, brightness=None):
@@ -119,7 +85,7 @@ class RgbwGroup(Group):
 
         Short-circuit transition as necessary.
 
-        :param duation: Time to transition.
+        :param duration: Time to transition.
         :param color: Transition to this color.
         :param brightness: Transition to this brightness.
         """
@@ -156,13 +122,13 @@ class RgbwGroup(Group):
         b_steps = 0
         if brightness is not None:
             b_steps = steps(self.brightness,
-                            brightness, BRIGHTNESS_STEPS)
+                            brightness, self.command_set.brightness_steps)
             b_start = self.brightness
         # Calculate color steps.
         c_steps = 0
         if color is not None:
-            c_steps = abs(util.rgb_to_hue(*self.color)
-                          - util.rgb_to_hue(*color))
+            c_steps = abs(self.command_set.convert_color(*self.color)
+                          - self.command_set.convert_color(*color))
             c_start = rgb_to_hsv(*self._color)
             c_end = rgb_to_hsv(*color)
         # Compute ideal step amount (at least one).

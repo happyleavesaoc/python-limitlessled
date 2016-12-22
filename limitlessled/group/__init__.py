@@ -7,6 +7,7 @@ import queue
 
 from limitlessled import MIN_WAIT, REPS
 from limitlessled.pipeline import Pipeline, PipelineQueue
+from limitlessled.group.commands import command_set_factory
 
 
 def rate(wait=MIN_WAIT, reps=REPS):
@@ -41,17 +42,19 @@ def rate(wait=MIN_WAIT, reps=REPS):
 class Group(object):
     """ LimitlessLED group. """
 
-    def __init__(self, bridge, number, name):
+    def __init__(self, bridge, number, name, led_type):
         """ Initialize group.
 
         :param bridge: Member of this bridge.
         :param number: Group number (1-4).
         :param name: Group name.
+        :param led_type: The type of the led.
         """
         self.name = name
         self.number = number
         self._bridge = bridge
         self._index = number - 1
+        self._command_set = command_set_factory(bridge, number, led_type)
         self._on = False
         self._brightness = 0.5
         self._queue = queue.Queue()
@@ -70,10 +73,31 @@ class Group(object):
         """
         return self._on
 
+    @on.setter
+    def on(self, state):
+        """ Turn on or off.
+
+        :param state: True (on) or False (off).
+        """
+        self._on = state
+        cmd = self.command_set.off()
+        if state:
+            cmd = self.command_set.on()
+        self.send(cmd)
+
+    def get_select_cmd(self):
+        """ Get selection command bytes. """
+        return self.command_set.on()
+
     @property
     def bridge(self):
         """ Bridge property. """
         return self._bridge
+
+    @property
+    def command_set(self):
+        """Command set property. """
+        return self._command_set
 
     def flash(self, duration=0.0):
         """ Flash a group.

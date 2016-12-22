@@ -7,9 +7,6 @@ from limitlessled.group import Group, rate
 from limitlessled.util import steps
 
 WHITE = 'white'
-STEPS = 10
-ON_BYTES = [0x38, 0x3D, 0x37, 0x32]
-OFF_BYTES = [0x3B, 0x33, 0x3A, 0x36]
 
 
 class WhiteGroup(Group):
@@ -25,33 +22,8 @@ class WhiteGroup(Group):
         :param number: Group number (1-4).
         :param name: Group name.
         """
-        super().__init__(bridge, number, name)
+        super().__init__(bridge, number, name, WHITE)
         self._temperature = 0.5
-
-    @property
-    def on(self):
-        """ On/off property.
-
-        :returns: On/off state.
-        """
-        return super(WhiteGroup, self).on
-
-    @on.setter
-    def on(self, state):
-        """ Turn on or off.
-
-        :param state: True (on) or False (off).
-        """
-        self._on = state
-        byte = OFF_BYTES
-        if state:
-            byte = ON_BYTES
-        cmd = [byte[self._index], 0x00]
-        self.send(cmd)
-
-    def get_select_cmd(self):
-        """ Get selection command bytes. """
-        return [ON_BYTES[self._index], 0x00]
 
     @property
     def brightness(self):
@@ -122,10 +94,12 @@ class WhiteGroup(Group):
         # Compute ideal step amount.
         b_steps = 0
         if brightness is not None:
-            b_steps = steps(self.brightness, brightness, STEPS)
+            b_steps = steps(self.brightness, brightness,
+                            self.command_set.brightness_steps)
         t_steps = 0
         if temperature is not None:
-            t_steps = steps(self.temperature, temperature, STEPS)
+            t_steps = steps(self.temperature, temperature,
+                            self.command_set.temperature_steps)
         total = b_steps + t_steps
         # Compute wait.
         wait = self._wait(duration, total)
@@ -174,6 +148,7 @@ class WhiteGroup(Group):
         :param brightness: Get to this brightness.
         """
         self._to_value(self._brightness, brightness,
+                       self.command_set.brightness_steps,
                        self._dimmer, self._brighter)
 
     def _to_temperature(self, temperature):
@@ -182,18 +157,20 @@ class WhiteGroup(Group):
         :param temperature: Get to this temperature.
         """
         self._to_value(self._temperature, temperature,
+                       self.command_set.temperature_steps,
                        self._cooler, self._warmer)
 
     @rate(reps=1)
-    def _to_value(self, current, target, step_down, step_up):
+    def _to_value(self, current, target, max_steps, step_down, step_up):
         """ Step to a value
 
         :param current: Current value.
         :param target: Target value.
+        :param max_steps: Maximum number of steps.
         :param step_down: Down function.
         :param step_up: Up function.
         """
-        for _ in range(steps(current, target, STEPS)):
+        for _ in range(steps(current, target, max_steps)):
             if (current - target) > 0:
                 step_down()
             else:
@@ -202,39 +179,47 @@ class WhiteGroup(Group):
     @rate(wait=0.025, reps=2)
     def _brightest(self):
         """ Group as bright as possible. """
-        for _ in range(steps(self.brightness, 1.0, STEPS)):
+        for _ in range(steps(self.brightness, 1.0,
+                             self.command_set.brightness_steps)):
             self._brighter()
 
     @rate(wait=0.025, reps=2)
     def _dimmest(self):
         """ Group brightness as dim as possible. """
-        for _ in range(steps(self.brightness, 0.0, STEPS)):
+        for _ in range(steps(self.brightness, 0.0,
+                             self.command_set.brightness_steps)):
             self._dimmer()
 
     @rate(wait=0.025, reps=2)
     def _warmest(self):
         """ Group temperature as warm as possible. """
-        for _ in range(steps(self.temperature, 1.0, STEPS)):
+        for _ in range(steps(self.temperature, 1.0,
+                             self.command_set.temperature_steps)):
             self._warmer()
 
     @rate(wait=0.025, reps=2)
     def _coolest(self):
         """ Group temperature as cool as possible. """
-        for _ in range(steps(self.temperature, 0.0, STEPS)):
+        for _ in range(steps(self.temperature, 0.0,
+                             self.command_set.temperature_steps)):
             self._cooler()
 
     def _brighter(self):
         """ One step brighter. """
-        self.send([0x3C, 0x00], select=True)
+        cmd = self.command_set.brighter()
+        self.send(cmd, select=True)
 
     def _dimmer(self):
         """ One step dimmer. """
-        self.send([0x34, 0x00], select=True)
+        cmd = self.command_set.dimmer()
+        self.send(cmd, select=True)
 
     def _warmer(self):
         """ One step warmer. """
-        self.send([0x3E, 0x00], select=True)
+        cmd = self.command_set.warmer()
+        self.send(cmd, select=True)
 
     def _cooler(self):
         """ One step cooler. """
-        self.send([0x3F, 0x00], select=True)
+        cmd = self.command_set.cooler()
+        self.send(cmd, select=True)

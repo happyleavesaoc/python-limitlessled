@@ -4,27 +4,6 @@ import math
 from colorsys import rgb_to_hls
 
 
-def rgb_to_hue(red, green, blue):
-    """ Convert RGB color to hue value.
-
-    0% lightness or 100% lightness (white & black),
-    (255, 255, 255) & (0,0,0) aren't representable.
-
-    Also note that the LimitlessLED color spectrum
-    starts at blue.
-
-    :param red: Red value (0-255).
-    :param green: Green value (0-255).
-    :param blue: Blue value (0-255).
-    :returns: Hue value (0-255).
-    """
-    hue = rgb_to_hls(red / 255, green / 255, blue / 255)[0] \
-        * -1 \
-        + 1 \
-        + (2.0/3.0)  # RGB -> BGR
-    return int(math.floor((hue % 1) * 256))
-
-
 def transition(value, maximum, start, end):
     """ Transition between two values.
 
