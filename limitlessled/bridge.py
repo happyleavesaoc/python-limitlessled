@@ -132,22 +132,19 @@ class Bridge(object):
         self.groups.append(group)
         return group
 
-    def send(self, group, command, reps=REPS, wait=MIN_WAIT, select=False):
+    def send(self, command, reps=REPS, wait=MIN_WAIT):
         """ Send a command to the physical bridge.
 
-        :param group: Run on this group.
-        :param command: A bytearray.
+        :param command: A Command instance.
         :param reps: Number of repetitions.
         :param wait: Wait time in seconds.
-        :param select: Select group if necessary.
         """
-        # TODO select depending on version?
         # Enqueue the command.
-        self._command_queue.put((group, command, reps, wait, select))
+        self._command_queue.put((command, reps, wait))
         # Wait before accepting another command.
         # This keeps individual groups relatively synchronized.
         sleep = reps * wait * self.active
-        if select and self._selected_number != group.number:
+        if command.select and self._selected_number != command.group_number:
             sleep += SELECT_WAIT
         time.sleep(sleep)
 
@@ -166,16 +163,16 @@ class Bridge(object):
         """
         while True:
             # Get command from queue.
-            (group, command, reps, wait, select) = self._command_queue.get()
+            (command, reps, wait) = self._command_queue.get()
             # Select group if a different group is currently selected.
-            if select and group and self._selected_number != group.number:
-                self._send_raw(group.get_select_cmd())
+            if command.select and self._selected_number != command.group_number:
+                self._send_raw(command.select_command)
                 time.sleep(SELECT_WAIT)
             # Repeat command as necessary.
             for _ in range(reps):
-                self._send_raw(command)
+                self._send_raw(command.bytes)
                 time.sleep(wait)
-            self._selected_number = group.number
+            self._selected_number = command.group_number
 
     def _send_raw(self, command, recv_buffer=None):
         """

@@ -51,13 +51,13 @@ class RgbwGroup(Group):
             return
         self._color = color
         cmd = self.command_set.color(color)
-        self.send(cmd, select=True)
+        self.send(cmd)
 
     def white(self):
         """ Set color to white. """
         self._color = RGB_WHITE
         cmd = self.command_set.white()
-        self.send(cmd, select=True)
+        self.send(cmd)
 
     @property
     def brightness(self):
@@ -78,7 +78,7 @@ class RgbwGroup(Group):
                              "represented as decimal 0-1.0")
         self._brightness = brightness
         cmd = self.command_set.brightness(brightness)
-        self.send(cmd, select=True)
+        self.send(cmd)
 
     def transition(self, duration, color=None, brightness=None):
         """ Transition wrapper.

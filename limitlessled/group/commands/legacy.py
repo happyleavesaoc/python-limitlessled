@@ -6,7 +6,7 @@ from colorsys import rgb_to_hls
 
 from limitlessled.group.rgbw import RGBW
 from limitlessled.group.white import WHITE
-from limitlessled.group.commands import CommandSet
+from limitlessled.group.commands import CommandSet, Command
 
 
 class CommandSetLegacy(CommandSet):
@@ -43,11 +43,14 @@ class CommandSetLegacy(CommandSet):
 
         return int(math.floor((hue % 1) * 256))
 
-    def _build_command(self, cmd_1, cmd_2=None):
+    def _build_command(self, cmd_1, cmd_2=None,
+                       select=False, select_command=None):
         """
         Constructs the complete command.
         :param cmd_1: Light command 1.
         :param cmd_2: Light command 2.
+        :param select: If command requires selection.
+        :param select_command: Selection command bytes.
         :return: The complete command.
         """
         if cmd_2 is None:
@@ -57,7 +60,7 @@ class CommandSetLegacy(CommandSet):
         if self._bridge.version < self.BRIDGE_SHORT_VERSION_MIN:
             cmd.append(self.BRIDGE_LONG_BYTE)
 
-        return cmd
+        return Command(cmd, self._group_number, select, select_command)
 
 
 class CommandSetWhiteLegacy(CommandSetLegacy):
@@ -97,28 +100,28 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
         Build command for setting the brightness one step dimmer.
         :return: The command.
         """
-        return self._build_command(0x34)
+        return self._build_command(0x34, select=True, select_command=self.on())
 
     def brighter(self):
         """
         Build command for setting the brightness one step brighter.
         :return: The command.
         """
-        return self._build_command(0x3C)
+        return self._build_command(0x3C, select=True, select_command=self.on())
 
     def cooler(self):
         """
         Build command for setting the temperature one step cooler.
         :return: The command.
         """
-        return self._build_command(0x3F)
+        return self._build_command(0x3F, select=True, select_command=self.on())
 
     def warmer(self):
         """
         Build command for setting the temperature one step warmer.
         :return: The command.
         """
-        return self._build_command(0x3E)
+        return self._build_command(0x3E, select=True, select_command=self.on())
 
 
 class CommandSetRgbwLegacy(CommandSetLegacy):
@@ -156,7 +159,8 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         Build command for turning the led into white mode.
         :return: The command.
         """
-        return self._build_command(self._offset(0xC5))
+        return self._build_command(self._offset(0xC5),
+                                   select=True, select_command=self.on())
 
     def color(self, color):
         """
@@ -164,7 +168,8 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         :param color: RGB color tuple.
         :return: The command.
         """
-        return self._build_command(0x40, self.convert_color(color))
+        return self._build_command(0x40, self.convert_color(color),
+                                   select=True, select_command=self.on())
 
     def brightness(self, brightness):
         """
@@ -172,7 +177,8 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         :param brightness: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x4E, self.convert_brightness(brightness))
+        return self._build_command(0x4E, self.convert_brightness(brightness),
+                                   select=True, select_command=self.on())
 
     def _offset(self, byte):
         """ Calcuate group command offset.

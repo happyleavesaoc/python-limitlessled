@@ -28,6 +28,44 @@ def command_set_factory(bridge, group_number, led_type):
                          'specified bridge version and led type.')
 
 
+class Command:
+    """ Represents a single command to be sent to the bridge. """
+
+    def __init__(self, bytes, group_number,
+                 select=False, select_command=None):
+        """
+        Initialize command.
+        :param bytes: A bytearray.
+        :param group_number: Group number (1-4).
+        :param select: If command requires selection.
+        :param select_command: Selection command bytes.
+        """
+        self._bytes = bytearray(bytes)
+        self._group_number = group_number
+        self._select = select
+        self._select_command = select_command
+
+    @property
+    def bytes(self):
+        """ The command as bytearray. """
+        return self._bytes
+
+    @property
+    def group_number(self):
+        """ The group number (1-4). """
+        return self._group_number
+
+    @property
+    def select(self):
+        """ If command requires selection. """
+        return self._select
+
+    @property
+    def select_command(self):
+        """ Selection command bytes. """
+        return self._select_command
+
+
 class CommandSet:
     """ Base class for command sets."""
 

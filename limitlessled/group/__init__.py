@@ -85,10 +85,6 @@ class Group(object):
             cmd = self.command_set.on()
         self.send(cmd)
 
-    def get_select_cmd(self):
-        """ Get selection command bytes. """
-        return self.command_set.on()
-
     @property
     def bridge(self):
         """ Bridge property. """
@@ -108,14 +104,12 @@ class Group(object):
             self.on = not self.on
             time.sleep(duration)
 
-    def send(self, cmd, select=False):
+    def send(self, cmd):
         """ Send a command to the bridge.
 
         :param cmd: List of command bytes.
-        :param select: If command requires selection.
         """
-        self._bridge.send(self, cmd, wait=self.wait,
-                          reps=self.reps, select=select)
+        self._bridge.send(cmd)
 
     def enqueue(self, pipeline):
         """ Start a pipeline.

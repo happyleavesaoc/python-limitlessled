@@ -206,20 +206,16 @@ class WhiteGroup(Group):
 
     def _brighter(self):
         """ One step brighter. """
-        cmd = self.command_set.brighter()
-        self.send(cmd, select=True)
+        self.send(self.command_set.brighter())
 
     def _dimmer(self):
         """ One step dimmer. """
-        cmd = self.command_set.dimmer()
-        self.send(cmd, select=True)
+        self.send(self.command_set.dimmer())
 
     def _warmer(self):
         """ One step warmer. """
-        cmd = self.command_set.warmer()
-        self.send(cmd, select=True)
+        self.send(self.command_set.warmer())
 
     def _cooler(self):
         """ One step cooler. """
-        cmd = self.command_set.cooler()
-        self.send(cmd, select=True)
+        self.send(self.command_set.cooler())

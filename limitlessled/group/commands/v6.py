@@ -6,7 +6,7 @@ from colorsys import rgb_to_hsv
 
 from limitlessled.group.rgbw import RGBW, RGBWW, BRIDGE_LED
 from limitlessled.group.white import WHITE
-from limitlessled.group.commands import CommandSet
+from limitlessled.group.commands import CommandSet, Command
 
 
 class CommandSetV6(CommandSet):
@@ -83,7 +83,8 @@ class CommandSetV6(CommandSet):
         zone_selector = [self._group_number, 0x00]
         checksum = sum(cmd + zone_selector) & 0xFF
 
-        return preamble + cmd + zone_selector + [checksum]
+        return Command(preamble + cmd + zone_selector + [checksum],
+                       self._group_number)
 
 
 class CommandSetBridgeLightV6(CommandSetV6):
