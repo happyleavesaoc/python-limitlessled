@@ -198,65 +198,6 @@ class CommandSetRgbwV6(CommandSetV6):
     """ Command set for RGBW led light connected to wifi bridge v6. """
 
     SUPPORTED_LED_TYPES = [RGBW]
-    REMOTE_STYLE = 0x08
-
-    def __init__(self, bridge, group_number):
-        """
-        Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
-        :param group_number: The group number.
-        """
-        super().__init__(bridge, group_number, self.REMOTE_STYLE)
-
-    def on(self):
-        """
-        Build command for turning the led on.
-        :return: The command.
-        """
-        return self._build_command(0x04, 0x01)
-
-    def off(self):
-        """
-        Build command for turning the led off.
-        :return: The command.
-        """
-        return self._build_command(0x04, 0x02)
-
-    def night_light(self):
-        """
-        Build command for turning the led into night light mode.
-        :return: The command.
-        """
-        return self._build_command(0x04, 0x05)
-
-    def white(self):
-        """
-        Build command for turning the led into white mode.
-        :return: The command.
-        """
-        return self._build_command(0x05, 0x64)
-
-    def color(self, color):
-        """
-        Build command for setting the color of the led.
-        :param color: RGB color tuple.
-        :return: The command.
-        """
-        return self._build_command(0x01, self.convert_color(color))
-
-    def brightness(self, brightness):
-        """
-        Build command for setting the brightness of the led.
-        :param brightness: Value to set (0.0-1.0).
-        :return: The command.
-        """
-        return self._build_command(0x03, self.convert_brightness(brightness))
-
-
-class CommandSetRgbwwV6(CommandSetV6):
-    """ Command set for RGBWW led light connected to wifi bridge v6. """
-
-    SUPPORTED_LED_TYPES = [RGBWW]
     REMOTE_STYLE = 0x07
 
     def __init__(self, bridge, group_number):
@@ -310,3 +251,62 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x02, self.convert_brightness(brightness))
+
+
+class CommandSetRgbwwV6(CommandSetV6):
+    """ Command set for RGBWW led light connected to wifi bridge v6. """
+
+    SUPPORTED_LED_TYPES = [RGBWW]
+    REMOTE_STYLE = 0x08
+
+    def __init__(self, bridge, group_number):
+        """
+        Initializes the command set.
+        :param bridge: The bridge the leds are connected to.
+        :param group_number: The group number.
+        """
+        super().__init__(bridge, group_number, self.REMOTE_STYLE)
+
+    def on(self):
+        """
+        Build command for turning the led on.
+        :return: The command.
+        """
+        return self._build_command(0x04, 0x01)
+
+    def off(self):
+        """
+        Build command for turning the led off.
+        :return: The command.
+        """
+        return self._build_command(0x04, 0x02)
+
+    def night_light(self):
+        """
+        Build command for turning the led into night light mode.
+        :return: The command.
+        """
+        return self._build_command(0x04, 0x05)
+
+    def white(self):
+        """
+        Build command for turning the led into white mode.
+        :return: The command.
+        """
+        return self._build_command(0x05, 0x64)
+
+    def color(self, color):
+        """
+        Build command for setting the color of the led.
+        :param color: RGB color tuple.
+        :return: The command.
+        """
+        return self._build_command(0x01, self.convert_color(color))
+
+    def brightness(self, brightness):
+        """
+        Build command for setting the brightness of the led.
+        :param brightness: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x03, self.convert_brightness(brightness))
