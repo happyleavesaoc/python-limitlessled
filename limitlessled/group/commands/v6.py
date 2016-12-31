@@ -64,7 +64,10 @@ class CommandSetV6(CommandSet):
         :return: The color in byte representation (best-effort basis).
         """
         hue = rgb_to_hsv(*color)[0]
-        return math.floor(hue * self.MAX_COLOR)
+        cn = (176 - math.floor(hue * self.MAX_COLOR)) % (self.MAX_COLOR + 1)
+        cn = self.MAX_COLOR - cn - 0x37
+
+        return cn % (self.MAX_COLOR + 1)
 
     def _build_command(self, cmd_1, cmd_2):
         """
