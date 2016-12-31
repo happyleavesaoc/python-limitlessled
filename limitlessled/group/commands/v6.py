@@ -63,7 +63,7 @@ class CommandSetV6(CommandSet):
         :param color: The RGB color tuple.
         :return: The color in byte representation (best-effort basis).
         """
-        hue = rgb_to_hsv(*color)
+        hue = rgb_to_hsv(*color)[0]
         return math.floor(hue * self.MAX_COLOR)
 
     def _build_command(self, cmd_1, cmd_2):
