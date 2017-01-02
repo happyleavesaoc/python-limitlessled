@@ -19,6 +19,8 @@ BRIDGE_INITIALIZATION_COMMAND = [0x20, 0x00, 0x00, 0x00, 0x16, 0x02, 0x62,
                                  0x3a, 0xd5, 0xed, 0xa3, 0x01, 0xae, 0x08,
                                  0x2d, 0x46, 0x61, 0x41, 0xa7, 0xf6, 0xdc,
                                  0xaf, 0xfe, 0xf7, 0x00, 0x00, 0x1e]
+KEEP_ALIVE_COMMAND_PREAMBLE = [0xD0, 0x00, 0x00, 0x00, 0x02]
+KEEP_ALIVE_TIME = 5
 STARTING_SEQUENTIAL_BYTE = 0x02
 
 
@@ -57,6 +59,7 @@ class Bridge(object):
         :param version: Bridge version.
         :param bridge_led_name: Name of the bridge led group.
         """
+        self.is_closed = False
         self.wait = MIN_WAIT
         self.reps = REPS
         self.groups = []
@@ -89,6 +92,11 @@ class Bridge(object):
             self._send_raw(BRIDGE_INITIALIZATION_COMMAND, response)
             self._wb1 = response[19]
             self._wb2 = response[20]
+
+            # Start keep alive thread.
+            keep_alive_thread = threading.Thread(target=self._keep_alive)
+            keep_alive_thread.daemon = True
+            keep_alive_thread.start()
 
     @property
     def sn(self):
@@ -161,7 +169,7 @@ class Bridge(object):
 
         TODO: Only wait when another command comes in.
         """
-        while True:
+        while not self.is_closed:
             # Get command from queue.
             (command, reps, wait) = self._command_queue.get()
             # Select group if a different group is currently selected.
@@ -185,4 +193,20 @@ class Bridge(object):
 
         if recv_buffer:
             self._socket.recv_into(recv_buffer)
+
+    def _keep_alive(self):
+        """
+        Send keep alive messages continously to bridge.
+        """
+        while not self.is_closed:
+            command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
+            self._send_raw(command)
+
+            time.sleep(KEEP_ALIVE_TIME)
+
+    def close(self):
+        """
+        Closes the connection to the bridge.
+        """
+        self.is_closed = True
 
