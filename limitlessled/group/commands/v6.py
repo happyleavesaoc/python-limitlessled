@@ -54,9 +54,13 @@ class CommandSetV6(CommandSet):
         Convert the saturation from decimal percent (0.0-1.0)
         to byte representation for use in commands.
         :param saturation: The saturation from in decimal percent (0.0-1.0).
+        1.0 is the maximum saturation where no white leds will be on. 0.0 is no
+        saturation.
         :return: The saturation in byte representation.
         """
-        return math.ceil(saturation * self.MAX_SATURATION)
+
+        saturation_inverted = 1 - saturation;
+        return math.ceil(saturation_inverted * self.MAX_SATURATION)
 
     def convert_temperature(self, temperature):
         """
