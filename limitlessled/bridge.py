@@ -189,7 +189,7 @@ class Bridge(object):
         :param recv_buffer: Response buffer. If None, no response is received.
         """
         self._socket.send(bytearray(command))
-        self._sn += 1
+        self._sn = (self._sn + 1) % 256
 
         if recv_buffer:
             self._socket.recv_into(recv_buffer)
