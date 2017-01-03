@@ -80,6 +80,27 @@ class RgbwGroup(Group):
         cmd = self.command_set.brightness(brightness)
         self.send(cmd)
 
+    @property
+    def saturation(self):
+        """ Saturation property.
+
+        :returns: Saturation.
+        """
+        return self._saturation
+
+    @brightness.setter
+    def saturation(self, saturation):
+        """ Set the group saturation.
+
+        :param saturation: Saturation in decimal percent (0.0-1.0).
+        """
+        if saturation < 0 or saturation > 1:
+            raise ValueError("Saturation must be a percentage "
+                             "represented as decimal 0-1.0")
+        self._saturation = saturation
+        cmd = self.command_set.saturation(saturation)
+        self.send(cmd)
+
     def transition(self, duration, color=None, brightness=None):
         """ Transition wrapper.
 

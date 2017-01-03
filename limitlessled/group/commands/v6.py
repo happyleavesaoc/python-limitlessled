@@ -17,6 +17,7 @@ class CommandSetV6(CommandSet):
     PASSWORD_BYTE2 = 0x00
     MAX_COLOR = 0xFF
     MAX_BRIGHTNESS = 0x64
+    MAX_SATURATION = 0x64
     MAX_TEMPERATURE = 0x64
 
     def __init__(self, bridge, group_number, remote_style,
@@ -47,6 +48,19 @@ class CommandSetV6(CommandSet):
         :return: The brightness in byte representation.
         """
         return math.ceil(brightness * self.MAX_BRIGHTNESS)
+
+    def convert_saturation(self, saturation):
+        """
+        Convert the saturation from decimal percent (0.0-1.0)
+        to byte representation for use in commands.
+        :param saturation: The saturation from in decimal percent (0.0-1.0).
+        1.0 is the maximum saturation where no white leds will be on. 0.0 is no
+        saturation.
+        :return: The saturation in byte representation.
+        """
+
+        saturation_inverted = 1 - saturation;
+        return math.ceil(saturation_inverted * self.MAX_SATURATION)
 
     def convert_temperature(self, temperature):
         """
@@ -310,3 +324,11 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x03, self.convert_brightness(brightness))
+
+    def saturation(self, saturation):
+        """
+        Build command for setting the saturation of the led.
+        :param saturation: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x02, self.convert_saturation(saturation))
