@@ -74,17 +74,22 @@ class CommandSetV6(CommandSet):
         """
         return math.ceil(temperature * self.MAX_TEMPERATURE)
 
-    def convert_hue(self, hue):
+    def convert_hue(self, hue, legacy_color_wheel=False):
         """
         Converts the hue from HSV color circle to the LimitlessLED color wheel.
         :param hue: The hue in decimal percent (0.0-1.0).
+        :param legacy_color_wheel: Whether or not use the old color wheel.
         :return: The hue regarding the LimitlessLED color wheel.
 
         """
-        cn = (176 - math.floor(hue * self.MAX_HUE)) % (self.MAX_HUE + 1)
-        cn = self.MAX_HUE - cn - 0x37
+        hue = math.ceil(hue * self.MAX_HUE)
+        if legacy_color_wheel:
+            hue = (176 - hue) % (self.MAX_HUE + 1)
+            hue = (self.MAX_HUE - hue - 0x37) % (self.MAX_HUE + 1)
+        else:
+            hue += 10  # The color wheel for RGBWW bulbs seems to be shifted
 
-        return cn % (self.MAX_HUE + 1)
+        return hue % (self.MAX_HUE + 1)
 
     def _build_command(self, cmd_1, cmd_2):
         """
