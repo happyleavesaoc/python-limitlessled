@@ -49,7 +49,7 @@ class RgbwGroup(Group):
         if color == RGB_WHITE:
             self.white()
             return
-        self.color = color
+        self._color = color
         self.hue = hue_of_color(color)
 
     def white(self):
