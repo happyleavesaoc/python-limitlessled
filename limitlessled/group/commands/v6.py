@@ -310,12 +310,13 @@ class CommandSetRgbwwV6(CommandSetV6):
         """
         return self._build_command(0x04, 0x05)
 
-    def white(self):
+    def white(self, temperature=1):
         """
         Build command for turning the led into white mode.
+        :param: The temperature to set.
         :return: The command.
         """
-        return self._build_command(0x05, 0x64)
+        return self.temperature(temperature)
 
     def hue(self, hue):
         """

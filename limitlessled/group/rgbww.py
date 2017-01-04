@@ -54,7 +54,7 @@ class RgbwwGroup(Group):
     def white(self):
         """ Set color to white. """
         self._color = RGB_WHITE
-        cmd = self.command_set.white()
+        cmd = self.command_set.white(self.temperature)
         self.send(cmd)
 
     @property
