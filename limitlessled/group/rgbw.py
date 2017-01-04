@@ -7,7 +7,7 @@ from colorsys import rgb_to_hsv, hsv_to_rgb
 
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
-from limitlessled.util import steps
+from limitlessled.util import steps, hue_of_color
 
 
 RGBW = 'rgbw'
@@ -27,6 +27,7 @@ class RgbwGroup(Group):
         :param led_type: The type of the led. (RGBW or BRIDGE_LED)
         """
         super().__init__(bridge, number, name, led_type)
+        self._hue = 0
         self._color = RGB_WHITE
 
     @property
@@ -48,9 +49,8 @@ class RgbwGroup(Group):
         if color == RGB_WHITE:
             self.white()
             return
-        self._color = color
-        cmd = self.command_set.color(color)
-        self.send(cmd)
+        self.color = color
+        self.hue = hue_of_color(color)
 
     def white(self):
         """ Set color to white. """
@@ -77,6 +77,27 @@ class RgbwGroup(Group):
                              "represented as decimal 0-1.0")
         self._brightness = brightness
         cmd = self.command_set.brightness(brightness)
+        self.send(cmd)
+
+    @property
+    def hue(self):
+        """ Hue property.
+
+        :returns: Hue.
+        """
+        return self._hue
+
+    @hue.setter
+    def hue(self, hue):
+        """ Set the group hue.
+
+        :param hue: Hue in decimal percent (0.0-1.0).
+        """
+        if hue < 0 or hue > 1:
+            raise ValueError("Hue must be a percentage "
+                             "represented as decimal 0-1.0")
+        self._hue = hue
+        cmd = self.command_set.hue(hue)
         self.send(cmd)
 
     def transition(self, duration, color=None, brightness=None):
@@ -126,8 +147,8 @@ class RgbwGroup(Group):
         # Calculate color steps.
         c_steps = 0
         if color is not None:
-            c_steps = abs(self.command_set.convert_color(*self.color)
-                          - self.command_set.convert_color(*color))
+            c_steps = abs(self.command_set.convert_hue(*self.color)
+                          - self.command_set.convert_hue(*color))
             c_start = rgb_to_hsv(*self._color)
             c_end = rgb_to_hsv(*color)
         # Compute ideal step amount (at least one).

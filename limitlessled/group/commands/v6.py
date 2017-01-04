@@ -2,7 +2,6 @@
 
 
 import math
-from colorsys import rgb_to_hsv
 
 from limitlessled.group.rgbw import RGBW, BRIDGE_LED
 from limitlessled.group.rgbww import RGBWW
@@ -16,28 +15,31 @@ class CommandSetV6(CommandSet):
     SUPPORTED_VERSIONS = [6]
     PASSWORD_BYTE1 = 0x00
     PASSWORD_BYTE2 = 0x00
-    MAX_COLOR = 0xFF
-    MAX_BRIGHTNESS = 0x64
+    MAX_HUE = 0xFF
     MAX_SATURATION = 0x64
+    MAX_BRIGHTNESS = 0x64
     MAX_TEMPERATURE = 0x64
 
     def __init__(self, bridge, group_number, remote_style,
-                 brightness_steps=None, color_steps=None,
-                 temperature_steps=None):
+                 brightness_steps=None, hue_steps=None,
+                 saturation_steps=None, temperature_steps=None):
         """
         Initialize the command set.
         :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         :param remote_style: The remote style of the device to control.
         :param brightness_steps: The number of brightness steps.
-        :param color_steps: The number of color steps.
+        :param hue_steps: The number of color steps.
+        :param saturation_steps: The number of saturation steps
         :param temperature_steps: The number of temperature steps.
         """
         brightness_steps = brightness_steps or self.MAX_BRIGHTNESS + 1
-        color_steps = color_steps or self.MAX_COLOR + 1
+        hue_steps = hue_steps or self.MAX_HUE + 1
+        saturation_steps = saturation_steps or self.MAX_SATURATION + 1
         temperature_steps = temperature_steps or self.MAX_TEMPERATURE + 1
         super().__init__(bridge, group_number, brightness_steps,
-                         color_steps=color_steps,
+                         hue_steps=hue_steps,
+                         saturation_steps=saturation_steps,
                          temperature_steps=temperature_steps)
         self._remote_style = remote_style
 
@@ -60,7 +62,7 @@ class CommandSetV6(CommandSet):
         :return: The saturation in byte representation.
         """
 
-        saturation_inverted = 1 - saturation;
+        saturation_inverted = 1 - saturation
         return math.ceil(saturation_inverted * self.MAX_SATURATION)
 
     def convert_temperature(self, temperature):
@@ -72,17 +74,17 @@ class CommandSetV6(CommandSet):
         """
         return math.ceil(temperature * self.MAX_TEMPERATURE)
 
-    def convert_color(self, color):
+    def convert_hue(self, hue):
         """
-        Converts the color from RGB to byte representation for use in commands.
-        :param color: The RGB color tuple.
-        :return: The color in byte representation (best-effort basis).
-        """
-        hue = rgb_to_hsv(*color)[0]
-        cn = (176 - math.floor(hue * self.MAX_COLOR)) % (self.MAX_COLOR + 1)
-        cn = self.MAX_COLOR - cn - 0x37
+        Converts the hue from HSV color circle to the LimitlessLED color wheel.
+        :param hue: The hue in decimal percent (0.0-1.0).
+        :return: The hue regarding the LimitlessLED color wheel.
 
-        return cn % (self.MAX_COLOR + 1)
+        """
+        cn = (176 - math.floor(hue * self.MAX_HUE)) % (self.MAX_HUE + 1)
+        cn = self.MAX_HUE - cn - 0x37
+
+        return cn % (self.MAX_HUE + 1)
 
     def _build_command(self, cmd_1, cmd_2):
         """
@@ -140,13 +142,13 @@ class CommandSetBridgeLightV6(CommandSetV6):
         """
         return self._build_command(0x03, 0x05)
 
-    def color(self, color):
+    def hue(self, hue):
         """
-        Build command for setting the color of the led.
-        :param color: RGB color tuple.
+        Build command for setting the hue of the led.
+        :param hue: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x01, self.convert_color(color))
+        return self._build_command(0x01, self.convert_hue(hue))
 
     def brightness(self, brightness):
         """
@@ -251,13 +253,13 @@ class CommandSetRgbwV6(CommandSetV6):
         """
         return self._build_command(0x03, 0x05)
 
-    def color(self, color):
+    def hue(self, hue):
         """
-        Build command for setting the color of the led.
-        :param color: RGB color tuple.
+        Build command for setting the hue of the led.
+        :param hue: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x01, self.convert_color(color))
+        return self._build_command(0x01, self.convert_hue(hue, True))
 
     def brightness(self, brightness):
         """
@@ -310,21 +312,13 @@ class CommandSetRgbwwV6(CommandSetV6):
         """
         return self._build_command(0x05, 0x64)
 
-    def color(self, color):
+    def hue(self, hue):
         """
-        Build command for setting the color of the led.
-        :param color: RGB color tuple.
+        Build command for setting the hue of the led.
+        :param hue: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x01, self.convert_color(color))
-
-    def brightness(self, brightness):
-        """
-        Build command for setting the brightness of the led.
-        :param brightness: Value to set (0.0-1.0).
-        :return: The command.
-        """
-        return self._build_command(0x03, self.convert_brightness(brightness))
+        return self._build_command(0x01, self.convert_hue(hue))
 
     def saturation(self, saturation):
         """
@@ -333,6 +327,14 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x02, self.convert_saturation(saturation))
+
+    def brightness(self, brightness):
+        """
+        Build command for setting the brightness of the led.
+        :param brightness: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x03, self.convert_brightness(brightness))
 
     def temperature(self, temperature):
         """

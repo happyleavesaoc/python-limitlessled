@@ -128,7 +128,7 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
     """ Command set for RGBW led light connected to legacy wifi bridge. """
 
     SUPPORTED_LED_TYPES = [RGBW]
-    COLOR_STEPS = 255
+    HUE_STEPS = 255
     BRIGHTNESS_STEPS = 25
 
     def __init__(self, bridge, group_number):
@@ -138,7 +138,7 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         :param group_number: The group number.
         """
         super().__init__(bridge, group_number, self.BRIGHTNESS_STEPS,
-                         color_steps=self.COLOR_STEPS)
+                         hue_steps=self.HUE_STEPS)
 
     def on(self):
         """

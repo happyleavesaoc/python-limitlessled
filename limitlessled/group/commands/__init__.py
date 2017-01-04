@@ -70,19 +70,22 @@ class CommandSet:
     """ Base class for command sets."""
 
     def __init__(self, bridge, group_number,
-                 brightness_steps, color_steps=1, temperature_steps=1):
+                 brightness_steps, hue_steps=1,
+                 saturation_steps=1, temperature_steps=1):
         """
         Initializes the command set.
         :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         :param brightness_steps: The number of brightness steps.
-        :param color_steps: The number of color steps.
+        :param hue_steps: The number of hue steps.
+        :param saturation_steps: The number of saturation steps
         :param temperature_steps: The number of temperature steps.
         """
         self._bridge = bridge
         self._group_number = group_number
         self._brightness_steps = brightness_steps
-        self._color_steps = color_steps
+        self._hue_steps = hue_steps
+        self._saturation_steps = saturation_steps
         self._temperature_steps = temperature_steps
 
     @property
@@ -94,12 +97,20 @@ class CommandSet:
         return self._brightness_steps
 
     @property
-    def color_steps(self):
+    def hue_steps(self):
         """
         Color steps property.
         :return: The number of color steps.
         """
-        return self._color_steps
+        return self._hue_steps
+
+    @property
+    def saturation_steps(self):
+        """
+        Saturation steps property.
+        :return: The number of saturation steps.
+        """
+        return self._saturation_steps
 
     @property
     def temperature_steps(self):
