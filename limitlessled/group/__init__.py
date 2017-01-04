@@ -109,7 +109,7 @@ class Group(object):
 
         :param cmd: List of command bytes.
         """
-        self._bridge.send(cmd)
+        self._bridge.send(cmd, wait=self.wait, reps=self.reps)
 
     def enqueue(self, pipeline):
         """ Start a pipeline.
