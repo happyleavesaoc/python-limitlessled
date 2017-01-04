@@ -3,8 +3,6 @@
 import math
 import time
 
-from colorsys import rgb_to_hsv, hsv_to_rgb
-
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
 from limitlessled.util import steps, hue_of_color
@@ -128,14 +126,14 @@ class RgbwGroup(Group):
         if color != self.color or brightness != self.brightness:
             if color is None and brightness == self.brightness:
                 return
-            self._transition(duration, color, brightness)
+            self._transition(duration, hue_of_color(color), brightness)
 
     @rate(wait=0.025, reps=1)
-    def _transition(self, duration, color, brightness):
+    def _transition(self, duration, hue, brightness):
         """ Transition.
 
         :param duration: Time to transition.
-        :param color: Transition to this color.
+        :param hue: Transition to this hue.
         :param brightness: Transition to this brightness.
         """
         # Calculate brightness steps.
@@ -144,15 +142,14 @@ class RgbwGroup(Group):
             b_steps = steps(self.brightness,
                             brightness, self.command_set.brightness_steps)
             b_start = self.brightness
-        # Calculate color steps.
-        c_steps = 0
-        if color is not None:
-            c_steps = abs(self.command_set.convert_hue(*self.color)
-                          - self.command_set.convert_hue(*color))
-            c_start = rgb_to_hsv(*self._color)
-            c_end = rgb_to_hsv(*color)
+        # Calculate hue steps.
+        h_steps = 0
+        if hue is not None:
+            h_steps = steps(self.hue,
+                            hue, self.command_set.hue_steps)
+            h_start = self.hue
         # Compute ideal step amount (at least one).
-        total = max(c_steps + b_steps, 1)
+        total = max(h_steps + b_steps, 1)
         # Calculate wait.
         wait = self._wait(duration, total)
         # Scale down steps if no wait time.
@@ -167,11 +164,9 @@ class RgbwGroup(Group):
                 j += 1
                 self.brightness = util.transition(j, b_steps,
                                                   b_start, brightness)
-            # Color.
-            elif c_steps > 0:
-                rgb = hsv_to_rgb(*util.transition3(i - j + 1,
-                                                   total - b_steps,
-                                                   c_start, c_end))
-                self.color = Color(*rgb)
+            # Hue.
+            if h_steps > 0 and i % math.ceil(total/h_steps) == 0:
+                self.hue = util.transition(i - j + 1, h_steps,
+                                           h_start, hue)
             # Wait.
             time.sleep(wait)

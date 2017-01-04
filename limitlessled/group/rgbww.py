@@ -3,8 +3,6 @@
 import math
 import time
 
-from colorsys import rgb_to_hsv, hsv_to_rgb
-
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
 from limitlessled.util import steps, hue_of_color, saturation_of_color
@@ -143,7 +141,8 @@ class RgbwwGroup(Group):
         cmd = self.command_set.temperature(temperature)
         self.send(cmd)
 
-    def transition(self, duration, color=None, brightness=None):
+    def transition(self, duration,
+                   color=None, brightness=None, temperature=None):
         """ Transition wrapper.
 
         Short-circuit transition as necessary.
@@ -151,35 +150,47 @@ class RgbwwGroup(Group):
         :param duration: Time to transition.
         :param color: Transition to this color.
         :param brightness: Transition to this brightness.
+        :param temperature: Transition to this temperature.
         """
+        if color and temperature is not None:
+            raise ValueError("Cannot transition to color and temperature "
+                             "simultaneously.")
+
         # Transition to white immediately.
         if color == RGB_WHITE:
             self.white()
-            color = None
         # Transition away from white immediately.
         elif self.color == RGB_WHITE and color is not None:
             self.color = color
-            color = None
         # Transition immediately if duration is zero.
         if duration == 0:
             if color:
                 self.color = color
             if brightness is not None:
                 self.brightness = brightness
+            if temperature is not None:
+                self.temperature = temperature
             return
         # Perform transition
-        if color != self.color or brightness != self.brightness:
-            if color is None and brightness == self.brightness:
-                return
-            self._transition(duration, color, brightness)
+        if color and color != self.color:
+            self._transition(duration, brightness,
+                             hue=hue_of_color(color),
+                             saturation=saturation_of_color(color))
+        elif temperature != self.temperature:
+            self._transition(duration, brightness, temperature=temperature)
+        elif brightness != self.brightness:
+            self._transition(duration, brightness)
 
     @rate(wait=0.025, reps=1)
-    def _transition(self, duration, color, brightness):
+    def _transition(self, duration, brightness,
+                    hue=None, saturation=None, temperature=None):
         """ Transition.
 
         :param duration: Time to transition.
-        :param color: Transition to this color.
         :param brightness: Transition to this brightness.
+        :param hue: Transition to this hue.
+        :param saturation: Transition to this saturation.
+        :param temperature: Transition to this temperature.
         """
         # Calculate brightness steps.
         b_steps = 0
@@ -187,34 +198,54 @@ class RgbwwGroup(Group):
             b_steps = steps(self.brightness,
                             brightness, self.command_set.brightness_steps)
             b_start = self.brightness
-        # Calculate color steps.
-        c_steps = 0
-        if color is not None:
-            c_steps = abs(self.command_set.convert_hue(*self.color)
-                          - self.command_set.convert_hue(*color))
-            c_start = rgb_to_hsv(*self._color)
-            c_end = rgb_to_hsv(*color)
+        # Calculate hue steps.
+        h_steps = 0
+        if hue is not None:
+            h_steps = steps(self.hue,
+                            hue, self.command_set.hue_steps)
+            h_start = self.hue
+        # Calculate saturation steps.
+        s_steps = 0
+        if saturation is not None:
+            s_steps = steps(self.saturation,
+                            saturation, self.command_set.saturation_steps)
+            s_start = self.saturation
+        # Calculate temperature steps.
+        t_steps = 0
+        if temperature is not None:
+            t_steps = steps(self.temperature,
+                            temperature, self.command_set.temperature_steps)
+            t_start = self.temperature
         # Compute ideal step amount (at least one).
-        total = max(c_steps + b_steps, 1)
+        total = max(b_steps + h_steps + s_steps + t_steps, 1)
         # Calculate wait.
         wait = self._wait(duration, total)
         # Scale down steps if no wait time.
         if wait == 0:
             total = self._scaled_steps(duration, total, total)
         # Perform transition.
-        j = 0
+        b_iteration = h_iteration = s_iteration = t_iteration = 0
         for i in range(total):
             # Brightness.
-            if (b_steps > 0
-                and i % math.ceil(total/b_steps) == 0):
-                j += 1
-                self.brightness = util.transition(j, b_steps,
+            if b_steps > 0 and i % math.ceil(total/b_steps) == 0:
+                b_iteration += 1
+                self.brightness = util.transition(b_iteration, b_steps,
                                                   b_start, brightness)
-            # Color.
-            elif c_steps > 0:
-                rgb = hsv_to_rgb(*util.transition3(i - j + 1,
-                                                   total - b_steps,
-                                                   c_start, c_end))
-                self.color = Color(*rgb)
+            # Hue.
+            if h_steps > 0 and i % math.ceil(total/h_steps) == 0:
+                h_iteration += 1
+                self.hue = util.transition(h_iteration, h_steps,
+                                           h_start, hue)
+            # Saturation.
+            if s_steps > 0 and i % math.ceil(total/s_steps) == 0:
+                s_iteration += 1
+                self.saturation = util.transition(s_iteration, s_steps,
+                                                  s_start, saturation)
+            # Temperature.
+            if t_steps > 0 and i % math.ceil(total/t_steps) == 0:
+                t_iteration += 1
+                self.temperature = util.transition(t_iteration, t_steps,
+                                                   t_start, temperature)
+
             # Wait.
             time.sleep(wait)

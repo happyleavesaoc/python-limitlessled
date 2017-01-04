@@ -33,22 +33,6 @@ def transition(value, maximum, start, end):
     return round(start + (end - start) * value / maximum, 2)
 
 
-def transition3(value, maximum, start, end):
-    """ Transition three values.
-
-    :param value: Current iteration.
-    :param maximum: Maximum number of iterations.
-    :param start: Start tuple.
-    :param end: End tuple.
-    :returns: Transitional tuple.
-    """
-    return (
-        transition(value, maximum, start[0], end[0]),
-        transition(value, maximum, start[1], end[1]),
-        transition(value, maximum, start[2], end[2])
-    )
-
-
 def steps(current, target, max_steps):
     """ Steps between two values.
 
