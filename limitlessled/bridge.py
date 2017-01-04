@@ -6,7 +6,8 @@ import time
 import threading
 
 from limitlessled import MIN_WAIT, REPS
-from limitlessled.group.rgbw import RgbwGroup, RGBW, RGBWW, BRIDGE_LED
+from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
+from limitlessled.group.rgbww import RgbwwGroup, RGBWW
 from limitlessled.group.white import WhiteGroup, WHITE
 
 
@@ -33,8 +34,10 @@ def group_factory(bridge, number, name, led_type):
     :param led_type: Either `RGBW`, `RGBWW`, `WHITE` or `BRIDGE_LED`.
     :returns: New group.
     """
-    if led_type in [RGBW, RGBWW, BRIDGE_LED]:
+    if led_type in [RGBW, BRIDGE_LED]:
         return RgbwGroup(bridge, number, name, led_type)
+    elif led_type == RGBWW:
+        return RgbwwGroup(bridge, number, name)
     elif led_type == WHITE:
         return WhiteGroup(bridge, number, name)
     else:

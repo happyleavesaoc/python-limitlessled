@@ -10,24 +10,24 @@ from limitlessled.group import Group, rate
 from limitlessled.util import steps
 
 
-RGBW = 'rgbw'
-BRIDGE_LED = 'bridge-led'
+RGBWW = 'rgbww'
 RGB_WHITE = Color(255, 255, 255)
 
 
-class RgbwGroup(Group):
+class RgbwwGroup(Group):
     """ RGBW LimitlessLED group. """
 
-    def __init__(self, bridge, number, name, led_type=RGBW):
+    def __init__(self, bridge, number, name):
         """ Initialize RGBW group.
 
         :param bridge: Associated bridge.
         :param number: Group number (1-4).
         :param name: Group name.
-        :param led_type: The type of the led. (RGBW or BRIDGE_LED)
         """
-        super().__init__(bridge, number, name, led_type)
+        super().__init__(bridge, number, name, RGBWW)
         self._color = RGB_WHITE
+        self._saturation = 0.5
+        self._temperature = 0.5
 
     @property
     def color(self):
@@ -77,6 +77,48 @@ class RgbwGroup(Group):
                              "represented as decimal 0-1.0")
         self._brightness = brightness
         cmd = self.command_set.brightness(brightness)
+        self.send(cmd)
+
+    @property
+    def saturation(self):
+        """ Saturation property.
+
+        :returns: Saturation.
+        """
+        return self._saturation
+
+    @saturation.setter
+    def saturation(self, saturation):
+        """ Set the group saturation.
+
+        :param saturation: Saturation in decimal percent (0.0-1.0).
+        """
+        if saturation < 0 or saturation > 1:
+            raise ValueError("Saturation must be a percentage "
+                             "represented as decimal 0-1.0")
+        self._saturation = saturation
+        cmd = self.command_set.saturation(saturation)
+        self.send(cmd)
+
+    @property
+    def temperature(self):
+        """ Temperature property.
+
+        :returns: Temperature (0.0-1.0)
+        """
+        return self._temperature
+
+    @temperature.setter
+    def temperature(self, temperature):
+        """ Set the temperature.
+
+        :param temperature: Value to set (0.0-1.0).
+        """
+        if temperature < 0 or temperature > 1:
+            raise ValueError("Temperature must be a percentage "
+                             "represented as decimal 0-1.0")
+        self._temperature = temperature
+        cmd = self.command_set.temperature(temperature)
         self.send(cmd)
 
     def transition(self, duration, color=None, brightness=None):
@@ -142,7 +184,7 @@ class RgbwGroup(Group):
         for i in range(total):
             # Brightness.
             if (b_steps > 0
-                    and i % math.ceil(total/b_steps) == 0):
+                and i % math.ceil(total/b_steps) == 0):
                 j += 1
                 self.brightness = util.transition(j, b_steps,
                                                   b_start, brightness)

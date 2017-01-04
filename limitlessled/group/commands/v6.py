@@ -4,7 +4,8 @@
 import math
 from colorsys import rgb_to_hsv
 
-from limitlessled.group.rgbw import RGBW, RGBWW, BRIDGE_LED
+from limitlessled.group.rgbw import RGBW, BRIDGE_LED
+from limitlessled.group.rgbww import RGBWW
 from limitlessled.group.white import WHITE
 from limitlessled.group.commands import CommandSet, Command
 
@@ -332,3 +333,11 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x02, self.convert_saturation(saturation))
+
+    def temperature(self, temperature):
+        """
+        Build command for setting the temperature of the led.
+        :param temperature: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x05, self.convert_temperature(temperature))
