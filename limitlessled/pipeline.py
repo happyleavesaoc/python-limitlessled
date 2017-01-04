@@ -155,6 +155,12 @@ class Pipeline(object):
             self._group.on = False
         elif stage.name == 'color':
             self._group.color = Color(*stage.args)
+        elif stage.name == 'hue':
+            self._group.hue = stage.args[0]
+        elif stage.name == 'saturation':
+            self._group.saturation = stage.args[0]
+        elif stage.name == 'color':
+            self._group.color = Color(*stage.args)
         elif stage.name == 'brightness':
             self._group.brightness = stage.args[0]
         elif stage.name == 'temperature':
