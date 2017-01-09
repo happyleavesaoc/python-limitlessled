@@ -21,7 +21,9 @@ BRIDGE_INITIALIZATION_COMMAND = [0x20, 0x00, 0x00, 0x00, 0x16, 0x02, 0x62,
                                  0x2d, 0x46, 0x61, 0x41, 0xa7, 0xf6, 0xdc,
                                  0xaf, 0xfe, 0xf7, 0x00, 0x00, 0x1e]
 KEEP_ALIVE_COMMAND_PREAMBLE = [0xD0, 0x00, 0x00, 0x00, 0x02]
-KEEP_ALIVE_TIME = 5
+KEEP_ALIVE_TIME = 1
+RECONNECT_TIME = 5
+SOCKET_TIMEOUT = 5
 STARTING_SEQUENTIAL_BYTE = 0x02
 
 
@@ -70,6 +72,7 @@ class Bridge(object):
         self.version = version
         self._sn = STARTING_SEQUENTIAL_BYTE
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._socket.settimeout(SOCKET_TIMEOUT)
         self._socket.connect((ip, port))
         self._command_queue = queue.Queue()
         self._lock = threading.Lock()
@@ -91,10 +94,7 @@ class Bridge(object):
                                              bridge_led_name, BRIDGE_LED)
 
             # Initialize connection to retrieve bridge session ids (wb1, wb2)
-            response = bytearray(22)
-            self._send_raw(BRIDGE_INITIALIZATION_COMMAND, response)
-            self._wb1 = response[19]
-            self._wb2 = response[20]
+            self._init_connection()
 
             # Start keep alive thread.
             keep_alive_thread = threading.Thread(target=self._keep_alive)
@@ -173,15 +173,18 @@ class Bridge(object):
         TODO: Only wait when another command comes in.
         """
         while not self.is_closed:
+            # Receive responses sent by bridges v6 and higher to preserve
+            # ordering of responses (required for keep alive responses)
+            recv_buffer = bytearray(8) if self.version >= 6 else None
             # Get command from queue.
             (command, reps, wait) = self._command_queue.get()
             # Select group if a different group is currently selected.
             if command.select and self._selected_number != command.group_number:
-                self._send_raw(command.select_command)
+                self._send_raw(command.select_command, recv_buffer)
                 time.sleep(SELECT_WAIT)
             # Repeat command as necessary.
             for _ in range(reps):
-                self._send_raw(command.bytes)
+                self._send_raw(command.bytes, recv_buffer)
                 time.sleep(wait)
             self._selected_number = command.group_number
 
@@ -197,13 +200,42 @@ class Bridge(object):
         if recv_buffer:
             self._socket.recv_into(recv_buffer)
 
+    def _init_connection(self):
+        """
+        Requests the session ids of the bridge.
+        :returns: True, if initialization was successful. False, otherwise.
+        """
+        try:
+            response = bytearray(22)
+            self._send_raw(BRIDGE_INITIALIZATION_COMMAND, response)
+            self._wb1 = response[19]
+            self._wb2 = response[20]
+        except socket.timeout:
+            return False
+
+        return True
+
+    def _reconnect(self):
+        """
+        Try continuously to reconnect to the bridge.
+        """
+        while not self.is_closed:
+            if self._init_connection():
+                return
+
+            time.sleep(RECONNECT_TIME)
+
     def _keep_alive(self):
         """
-        Send keep alive messages continously to bridge.
+        Send keep alive messages continuously to bridge.
         """
         while not self.is_closed:
             command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
-            self._send_raw(command)
+            response = bytearray(12)
+            try:
+                self._send_raw(command, response)
+            except socket.timeout:
+                self._reconnect()
 
             time.sleep(KEEP_ALIVE_TIME)
 
