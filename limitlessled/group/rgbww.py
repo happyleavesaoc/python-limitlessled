@@ -229,22 +229,26 @@ class RgbwwGroup(Group):
             # Brightness.
             if b_steps > 0 and i % math.ceil(total/b_steps) == 0:
                 b_iteration += 1
-                self.brightness = util.transition(b_iteration, b_steps,
+                self.brightness = util.transition(b_iteration,
+                                                  min(b_steps, total),
                                                   b_start, brightness)
             # Hue.
             if h_steps > 0 and i % math.ceil(total/h_steps) == 0:
                 h_iteration += 1
-                self.hue = util.transition(h_iteration, h_steps,
+                self.hue = util.transition(h_iteration,
+                                           min(h_steps, total),
                                            h_start, hue)
             # Saturation.
             if s_steps > 0 and i % math.ceil(total/s_steps) == 0:
                 s_iteration += 1
-                self.saturation = util.transition(s_iteration, s_steps,
+                self.saturation = util.transition(s_iteration,
+                                                  min(s_steps, total),
                                                   s_start, saturation)
             # Temperature.
             if t_steps > 0 and i % math.ceil(total/t_steps) == 0:
                 t_iteration += 1
-                self.temperature = util.transition(t_iteration, t_steps,
+                self.temperature = util.transition(t_iteration,
+                                                   min(t_steps, total),
                                                    t_start, temperature)
 
             # Wait.
