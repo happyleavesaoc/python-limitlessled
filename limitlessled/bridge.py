@@ -21,6 +21,7 @@ BRIDGE_INITIALIZATION_COMMAND = [0x20, 0x00, 0x00, 0x00, 0x16, 0x02, 0x62,
                                  0x2d, 0x46, 0x61, 0x41, 0xa7, 0xf6, 0xdc,
                                  0xaf, 0xfe, 0xf7, 0x00, 0x00, 0x1e]
 KEEP_ALIVE_COMMAND_PREAMBLE = [0xD0, 0x00, 0x00, 0x00, 0x02]
+KEEP_ALIVE_RESPONSE_PREAMBLE = [0xd8, 0x0, 0x0, 0x0, 0x07]
 KEEP_ALIVE_TIME = 1
 RECONNECT_TIME = 5
 SOCKET_TIMEOUT = 5
@@ -234,6 +235,8 @@ class Bridge(object):
             response = bytearray(12)
             try:
                 self._send_raw(command, response)
+                if response[:5] != bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
+                    self._reconnect()
             except socket.timeout:
                 self._reconnect()
 
