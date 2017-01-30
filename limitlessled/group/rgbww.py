@@ -227,7 +227,7 @@ class RgbwwGroup(Group):
                             temperature, self.command_set.temperature_steps)
             t_start = self.temperature
         # Compute ideal step amount (at least one).
-        total = max(b_steps + h_steps + s_steps + t_steps, 1)
+        total = max(b_steps, h_steps, s_steps, t_steps, 1)
         # Calculate wait.
         wait = self._wait(duration, total)
         # Scale down steps if no wait time.
