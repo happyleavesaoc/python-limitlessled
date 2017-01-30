@@ -1,6 +1,8 @@
 """ Utility functions. """
 
-from colorsys import rgb_to_hsv
+from colorsys import rgb_to_hsv, hsv_to_rgb
+
+from limitlessled import Color
 
 
 def hue_of_color(color):
@@ -19,6 +21,16 @@ def saturation_of_color(color):
     :return: The saturation of the color (0.0-1.0).
     """
     return rgb_to_hsv(*color)[1]
+
+
+def to_rgb(hue, saturation):
+    """
+    Converts hue and saturation to RGB color.
+    :param hue: The hue of the color.
+    :param saturation: The saturation of the color.
+    :return: The RGB color tuple.
+    """
+    return Color(*hsv_to_rgb(hue, saturation, 1))
 
 
 def transition(value, maximum, start, end):

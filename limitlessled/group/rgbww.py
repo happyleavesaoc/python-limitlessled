@@ -5,7 +5,7 @@ import time
 
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
-from limitlessled.util import steps, hue_of_color, saturation_of_color
+from limitlessled.util import steps, hue_of_color, saturation_of_color, to_rgb
 
 
 RGBWW = 'rgbww'
@@ -96,6 +96,7 @@ class RgbwwGroup(Group):
             raise ValueError("Hue must be a percentage "
                              "represented as decimal 0-1.0")
         self._hue = hue
+        self._update_color()
         cmd = self.command_set.hue(hue)
         self.send(cmd)
 
@@ -117,8 +118,14 @@ class RgbwwGroup(Group):
             raise ValueError("Saturation must be a percentage "
                              "represented as decimal 0-1.0")
         self._saturation = saturation
+        self._update_color()
         cmd = self.command_set.saturation(saturation)
         self.send(cmd)
+
+    def _update_color(self):
+        """ Update the color property from hue and saturation values.
+        """
+        self._color = to_rgb(self.hue, self.saturation)
 
     @property
     def temperature(self):
