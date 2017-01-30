@@ -119,8 +119,11 @@ class RgbwwGroup(Group):
                              "represented as decimal 0-1.0")
         self._saturation = saturation
         self._update_color()
-        cmd = self.command_set.saturation(saturation)
-        self.send(cmd)
+        if saturation == 0:
+            self.white()
+        else:
+            cmd = self.command_set.saturation(saturation)
+            self.send(cmd)
 
     def _update_color(self):
         """ Update the color property from hue and saturation values.
