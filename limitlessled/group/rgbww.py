@@ -174,10 +174,10 @@ class RgbwwGroup(Group):
             self.color = color
         # Transition immediately if duration is zero.
         if duration == 0:
-            if color:
-                self.color = color
             if brightness is not None:
                 self.brightness = brightness
+            if color:
+                self.color = color
             if temperature is not None:
                 self.temperature = temperature
             return
