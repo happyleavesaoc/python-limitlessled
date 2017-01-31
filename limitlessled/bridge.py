@@ -4,6 +4,7 @@ import queue
 import socket
 import time
 import threading
+from datetime import datetime, timedelta
 
 from limitlessled import MIN_WAIT, REPS
 from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
@@ -174,32 +175,25 @@ class Bridge(object):
         TODO: Only wait when another command comes in.
         """
         while not self.is_closed:
-            # Receive responses sent by bridges v6 and higher to preserve
-            # ordering of responses (required for keep alive responses)
-            recv_buffer = bytearray(8) if self.version >= 6 else None
             # Get command from queue.
             (command, reps, wait) = self._command_queue.get()
             # Select group if a different group is currently selected.
             if command.select and self._selected_number != command.group_number:
-                self._send_raw(command.select_command, recv_buffer)
+                self._send_raw(command.select_command)
                 time.sleep(SELECT_WAIT)
             # Repeat command as necessary.
             for _ in range(reps):
-                self._send_raw(command.bytes, recv_buffer)
+                self._send_raw(command.bytes)
                 time.sleep(wait)
             self._selected_number = command.group_number
 
-    def _send_raw(self, command, recv_buffer=None):
+    def _send_raw(self, command):
         """
         Sends an raw command directly to the physical bridge.
         :param command: A bytearray.
-        :param recv_buffer: Response buffer. If None, no response is received.
         """
         self._socket.send(bytearray(command))
         self._sn = (self._sn + 1) % 256
-
-        if recv_buffer:
-            self._socket.recv_into(recv_buffer)
 
     def _init_connection(self):
         """
@@ -208,7 +202,8 @@ class Bridge(object):
         """
         try:
             response = bytearray(22)
-            self._send_raw(BRIDGE_INITIALIZATION_COMMAND, response)
+            self._send_raw(BRIDGE_INITIALIZATION_COMMAND)
+            self._socket.recv_into(response)
             self._wb1 = response[19]
             self._wb2 = response[20]
         except socket.timeout:
@@ -232,13 +227,24 @@ class Bridge(object):
         """
         while not self.is_closed:
             command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
-            response = bytearray(12)
-            try:
-                self._send_raw(command, response)
-                if response[:5] != bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
-                    self._reconnect()
-            except socket.timeout:
+            self._send_raw(command)
+
+            start = datetime.now()
+            connection_alive = False
+            while datetime.now() - start < timedelta(seconds=SOCKET_TIMEOUT):
+                response = bytearray(12)
+                try:
+                    self._socket.recv_into(response)
+                except socket.timeout:
+                    break
+
+                if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
+                    connection_alive = True
+                    break
+
+            if not connection_alive:
                 self._reconnect()
+                continue
 
             time.sleep(KEEP_ALIVE_TIME)
 
