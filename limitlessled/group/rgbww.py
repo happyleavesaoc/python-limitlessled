@@ -227,38 +227,33 @@ class RgbwwGroup(Group):
                             temperature, self.command_set.temperature_steps)
             t_start = self.temperature
         # Compute ideal step amount (at least one).
-        total = max(b_steps, h_steps, s_steps, t_steps, 1)
+        total_steps = max(b_steps, h_steps, s_steps, t_steps, 1)
+        total_commands = b_steps + h_steps + s_steps + t_steps
         # Calculate wait.
-        wait = self._wait(duration, total)
+        wait = self._wait(duration, total_steps, total_commands)
         # Scale down steps if no wait time.
         if wait == 0:
-            total = self._scaled_steps(duration, total, total)
+            scaled_steps = self._scale_steps(duration, total_commands, b_steps,
+                                             h_steps, s_steps, t_steps)
+            b_steps, h_steps, s_steps, t_steps = scaled_steps
+            total_steps = max(b_steps, h_steps, s_steps, t_steps, 1)
         # Perform transition.
-        b_iteration = h_iteration = s_iteration = t_iteration = 0
-        for i in range(total):
+        for i in range(total_steps):
             # Brightness.
-            if b_steps > 0 and i % math.ceil(total/b_steps) == 0:
-                b_iteration += 1
-                self.brightness = util.transition(b_iteration,
-                                                  min(b_steps, total),
+            if b_steps > 0 and i % math.ceil(total_steps/b_steps) == 0:
+                self.brightness = util.transition(i, total_steps,
                                                   b_start, brightness)
             # Hue.
-            if h_steps > 0 and i % math.ceil(total/h_steps) == 0:
-                h_iteration += 1
-                self.hue = util.transition(h_iteration,
-                                           min(h_steps, total),
+            if h_steps > 0 and i % math.ceil(total_steps/h_steps) == 0:
+                self.hue = util.transition(i, total_steps,
                                            h_start, hue)
             # Saturation.
-            if s_steps > 0 and i % math.ceil(total/s_steps) == 0:
-                s_iteration += 1
-                self.saturation = util.transition(s_iteration,
-                                                  min(s_steps, total),
+            if s_steps > 0 and i % math.ceil(total_steps/s_steps) == 0:
+                self.saturation = util.transition(i, total_steps,
                                                   s_start, saturation)
             # Temperature.
-            if t_steps > 0 and i % math.ceil(total/t_steps) == 0:
-                t_iteration += 1
-                self.temperature = util.transition(t_iteration,
-                                                   min(t_steps, total),
+            if t_steps > 0 and i % math.ceil(total_steps/t_steps) == 0:
+                self.temperature = util.transition(i, total_steps,
                                                    t_start, temperature)
 
             # Wait.

@@ -100,25 +100,25 @@ class WhiteGroup(Group):
         if temperature is not None:
             t_steps = steps(self.temperature, temperature,
                             self.command_set.temperature_steps)
-        total = b_steps + t_steps
-        # Compute wait.
-        wait = self._wait(duration, total)
+        # Compute ideal step amount (at least one).
+        total_steps = max(b_steps, t_steps, 1)
+        total_commands = b_steps + t_steps
+        # Calculate wait.
+        wait = self._wait(duration, total_steps, total_commands)
         # Scale down steps if no wait time.
         if wait == 0:
-            b_steps = self._scaled_steps(duration, b_steps, total)
-            t_steps = self._scaled_steps(duration, t_steps, total)
-            total = b_steps + t_steps
+            b_steps, t_steps = self._scale_steps(duration, total_commands,
+                                                 b_steps, t_steps)
+            total_steps = max(b_steps, t_steps, 1)
         # Perform transition.
-        j = 0
-        for i in range(total):
+        for i in range(total_steps):
             # Brightness.
-            if b_steps > 0 and i % (total / b_steps) == 0:
-                j += 1
-                self.brightness = util.transition(j, b_steps,
+            if b_steps > 0 and i % (total_steps / b_steps) == 0:
+                self.brightness = util.transition(i, total_steps,
                                                   b_start, brightness)
             # Temperature.
             elif t_steps > 0:
-                self.temperature = util.transition(i - j + 1, t_steps,
+                self.temperature = util.transition(i, total_steps,
                                                    t_start, temperature)
             # Wait.
             time.sleep(wait)

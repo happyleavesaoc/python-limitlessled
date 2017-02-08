@@ -124,30 +124,33 @@ class Group(object):
         """ Stop a running pipeline. """
         self._event.set()
 
-    def _wait(self, duration, commands):
+    def _wait(self, duration, steps, commands):
         """ Compute wait time.
 
         :param duration: Total time (in seconds).
+        :param steps: Number of steps.
         :param commands: Number of commands.
         :returns: Wait in seconds.
         """
-        wait = (duration / commands) - \
+        wait = ((duration - self.wait * self.reps * commands) / steps) - \
                (self.wait * self.reps * self._bridge.active)
-        if wait < 0:
-            wait = 0
-        return wait
+        return max(0, wait)
 
-    def _scaled_steps(self, duration, steps, total):
-        """ Scale steps.
+    def _scale_steps(self, duration, commands, *steps):
+        """ Scale steps
 
-        :param duration: Total time (in seconds).
-        :param steps: Ideal step amount.
-        :param total: Total steps to take.
-        :returns: Steps scaled to time and total.
+        :param duration: Total time (in seconds)
+        :param commands: Number of commands to be executed.
+        :param steps: Steps for one or many properties to take.
+        :return: Steps scaled to time and total.
         """
-        return math.ceil(duration /
-                         (self.wait * self.reps * self._bridge.active) *
-                         (steps / total))
+        factor = duration / ((self.wait * self.reps * commands) - \
+                 (self.wait * self.reps * self._bridge.active))
+        steps = [math.ceil(factor * step) for step in steps]
+        if len(steps) == 1:
+            return steps[0]
+        else:
+            return steps
 
     def __str__(self):
         """ String representation.

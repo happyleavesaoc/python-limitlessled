@@ -149,24 +149,24 @@ class RgbwGroup(Group):
                             hue, self.command_set.hue_steps)
             h_start = self.hue
         # Compute ideal step amount (at least one).
-        total = max(h_steps + b_steps, 1)
+        total_steps = max(b_steps, h_steps, 1)
+        total_commands = b_steps + h_steps
         # Calculate wait.
-        wait = self._wait(duration, total)
+        wait = self._wait(duration, total_steps, total_commands)
         # Scale down steps if no wait time.
         if wait == 0:
-            total = self._scaled_steps(duration, total, total)
+            b_steps, h_steps = self._scale_steps(duration, total_commands,
+                                                 b_steps, h_steps)
+            total_steps = max(b_steps, h_steps, 1)
         # Perform transition.
-        j = 0
-        for i in range(total):
+        for i in range(total_steps):
             # Brightness.
-            if (b_steps > 0
-                    and i % math.ceil(total/b_steps) == 0):
-                j += 1
-                self.brightness = util.transition(j, b_steps,
+            if b_steps > 0 and i % math.ceil(total_steps/b_steps) == 0:
+                self.brightness = util.transition(i, total_steps,
                                                   b_start, brightness)
             # Hue.
-            if h_steps > 0 and i % math.ceil(total/h_steps) == 0:
-                self.hue = util.transition(i - j + 1, h_steps,
+            if h_steps > 0 and i % math.ceil(total_steps/h_steps) == 0:
+                self.hue = util.transition(i, total_steps,
                                            h_start, hue)
             # Wait.
             time.sleep(wait)
