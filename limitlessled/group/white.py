@@ -39,9 +39,14 @@ class WhiteGroup(Group):
 
         :param brightness: Value to set (0.0-1.0).
         """
-        self._setter('_brightness', brightness,
-                     self._dimmest, self._brightest,
-                     self._to_brightness)
+        try:
+            self._brightness = brightness
+            cmd = self.command_set.brightness(brightness)
+            self.send(cmd)
+        except AttributeError:
+            self._setter('_brightness', brightness,
+                         self._dimmest, self._brightest,
+                         self._to_brightness)
 
     @property
     def temperature(self):
@@ -57,9 +62,14 @@ class WhiteGroup(Group):
 
         :param temperature: Value to set (0.0-1.0).
         """
-        self._setter('_temperature', temperature,
-                     self._coolest, self._warmest,
-                     self._to_temperature)
+        try:
+            self._temperature = temperature
+            cmd = self.command_set.temperature(temperature)
+            self.send(cmd)
+        except AttributeError:
+            self._setter('_temperature', temperature,
+                         self._coolest, self._warmest,
+                         self._to_temperature)
 
     def transition(self, duration, brightness=None, temperature=None):
         """ Transition wrapper.
