@@ -2,7 +2,6 @@
 
 
 import math
-from colorsys import rgb_to_hls
 
 from limitlessled.group.rgbw import RGBW
 from limitlessled.group.white import WHITE
