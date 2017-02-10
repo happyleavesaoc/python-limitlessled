@@ -80,7 +80,6 @@ class CommandSetV6(CommandSet):
         :param hue: The hue in decimal percent (0.0-1.0).
         :param legacy_color_wheel: Whether or not use the old color wheel.
         :return: The hue regarding the LimitlessLED color wheel.
-
         """
         hue = math.ceil(hue * self.MAX_HUE)
         if legacy_color_wheel:
