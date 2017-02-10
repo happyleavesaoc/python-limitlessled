@@ -179,7 +179,7 @@ class Bridge(object):
             (command, reps, wait) = self._command_queue.get()
             # Select group if a different group is currently selected.
             if command.select and self._selected_number != command.group_number:
-                self._send_raw(command.select_command)
+                self._send_raw(command.select_command.bytes)
                 time.sleep(SELECT_WAIT)
             # Repeat command as necessary.
             for _ in range(reps):
