@@ -11,7 +11,7 @@ def hue_of_color(color):
     :param color: The RGB color tuple.
     :return: The hue of the color (0.0-1.0).
     """
-    return rgb_to_hsv(*color)[0]
+    return rgb_to_hsv(*[x / 255 for x in color])[0]
 
 
 def saturation_of_color(color):
@@ -20,7 +20,7 @@ def saturation_of_color(color):
     :param color: The RGB color tuple.
     :return: The saturation of the color (0.0-1.0).
     """
-    return rgb_to_hsv(*color)[1]
+    return rgb_to_hsv(*[x / 255 for x in color])[1]
 
 
 def to_rgb(hue, saturation):

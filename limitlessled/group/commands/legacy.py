@@ -29,17 +29,13 @@ class CommandSetLegacy(CommandSet):
         return brightness + self.BRIGHTNESS_OFFSET
 
     @staticmethod
-    def convert_color(color):
+    def convert_hue(hue):
         """
-        Converts the color from RGB to byte representation for use in commands.
-        :param color: The RGB color tuple.
-        :return: The color in byte representation (best-effort basis).
+        Converts the hue from HSV color circle to the LimitlessLED color wheel.
+        :param hue: The hue in decimal percent (0.0-1.0).
+        :return: The hue regarding the LimitlessLED color wheel.
         """
-        red, green, blue = color
-        hue = rgb_to_hls(red / 255, green / 255, blue / 255)[0] \
-              * -1 \
-              + 1 \
-              + (2.0/3.0)  # RGB -> BGR
+        hue = hue * -1 + 1 + (2.0/3.0)  # RGB -> BGR
 
         return int(math.floor((hue % 1) * 256))
 
@@ -162,13 +158,13 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         return self._build_command(self._offset(0xC5),
                                    select=True, select_command=self.on())
 
-    def color(self, color):
+    def hue(self, hue):
         """
-        Build command for setting the color of the led.
-        :param color: RGB color tuple.
+        Build command for setting the hue of the led.
+        :param hue: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x40, self.convert_color(color),
+        return self._build_command(0x40, self.convert_hue(hue),
                                    select=True, select_command=self.on())
 
     def brightness(self, brightness):
