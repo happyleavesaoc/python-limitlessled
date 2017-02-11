@@ -40,9 +40,9 @@ class WhiteGroup(Group):
         :param brightness: Value to set (0.0-1.0).
         """
         try:
-            self._brightness = brightness
             cmd = self.command_set.brightness(brightness)
             self.send(cmd)
+            self._brightness = brightness
         except AttributeError:
             self._setter('_brightness', brightness,
                          self._dimmest, self._brightest,
@@ -63,9 +63,9 @@ class WhiteGroup(Group):
         :param temperature: Value to set (0.0-1.0).
         """
         try:
-            self._temperature = temperature
             cmd = self.command_set.temperature(temperature)
             self.send(cmd)
+            self._temperature = temperature
         except AttributeError:
             self._setter('_temperature', temperature,
                          self._coolest, self._warmest,
