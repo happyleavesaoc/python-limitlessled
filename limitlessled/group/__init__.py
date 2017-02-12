@@ -7,6 +7,7 @@ import queue
 
 from limitlessled import MIN_WAIT, REPS
 from limitlessled.pipeline import Pipeline, PipelineQueue
+from limitlessled.group.commands import command_set_factory
 
 
 def rate(wait=MIN_WAIT, reps=REPS):
@@ -41,17 +42,19 @@ def rate(wait=MIN_WAIT, reps=REPS):
 class Group(object):
     """ LimitlessLED group. """
 
-    def __init__(self, bridge, number, name):
+    def __init__(self, bridge, number, name, led_type):
         """ Initialize group.
 
         :param bridge: Member of this bridge.
         :param number: Group number (1-4).
         :param name: Group name.
+        :param led_type: The type of the led.
         """
         self.name = name
         self.number = number
         self._bridge = bridge
         self._index = number - 1
+        self._command_set = command_set_factory(bridge, number, led_type)
         self._on = False
         self._brightness = 0.5
         self._queue = queue.Queue()
@@ -70,10 +73,27 @@ class Group(object):
         """
         return self._on
 
+    @on.setter
+    def on(self, state):
+        """ Turn on or off.
+
+        :param state: True (on) or False (off).
+        """
+        self._on = state
+        cmd = self.command_set.off()
+        if state:
+            cmd = self.command_set.on()
+        self.send(cmd)
+
     @property
     def bridge(self):
         """ Bridge property. """
         return self._bridge
+
+    @property
+    def command_set(self):
+        """Command set property. """
+        return self._command_set
 
     def flash(self, duration=0.0):
         """ Flash a group.
@@ -84,14 +104,12 @@ class Group(object):
             self.on = not self.on
             time.sleep(duration)
 
-    def send(self, cmd, select=False):
+    def send(self, cmd):
         """ Send a command to the bridge.
 
         :param cmd: List of command bytes.
-        :param select: If command requires selection.
         """
-        self._bridge.send(self, cmd, wait=self.wait,
-                          reps=self.reps, select=select)
+        self._bridge.send(cmd, wait=self.wait, reps=self.reps)
 
     def enqueue(self, pipeline):
         """ Start a pipeline.
@@ -106,30 +124,33 @@ class Group(object):
         """ Stop a running pipeline. """
         self._event.set()
 
-    def _wait(self, duration, commands):
+    def _wait(self, duration, steps, commands):
         """ Compute wait time.
 
         :param duration: Total time (in seconds).
+        :param steps: Number of steps.
         :param commands: Number of commands.
         :returns: Wait in seconds.
         """
-        wait = (duration / commands) - \
+        wait = ((duration - self.wait * self.reps * commands) / steps) - \
                (self.wait * self.reps * self._bridge.active)
-        if wait < 0:
-            wait = 0
-        return wait
+        return max(0, wait)
 
-    def _scaled_steps(self, duration, steps, total):
-        """ Scale steps.
+    def _scale_steps(self, duration, commands, *steps):
+        """ Scale steps
 
-        :param duration: Total time (in seconds).
-        :param steps: Ideal step amount.
-        :param total: Total steps to take.
-        :returns: Steps scaled to time and total.
+        :param duration: Total time (in seconds)
+        :param commands: Number of commands to be executed.
+        :param steps: Steps for one or many properties to take.
+        :return: Steps scaled to time and total.
         """
-        return math.ceil(duration /
-                         (self.wait * self.reps * self._bridge.active) *
-                         (steps / total))
+        factor = duration / ((self.wait * self.reps * commands) - \
+                 (self.wait * self.reps * self._bridge.active))
+        steps = [math.ceil(factor * step) for step in steps]
+        if len(steps) == 1:
+            return steps[0]
+        else:
+            return steps
 
     def __str__(self):
         """ String representation.

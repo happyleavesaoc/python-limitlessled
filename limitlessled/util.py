@@ -1,28 +1,36 @@
 """ Utility functions. """
 
-import math
-from colorsys import rgb_to_hls
+from colorsys import rgb_to_hsv, hsv_to_rgb
+
+from limitlessled import Color
 
 
-def rgb_to_hue(red, green, blue):
-    """ Convert RGB color to hue value.
-
-    0% lightness or 100% lightness (white & black),
-    (255, 255, 255) & (0,0,0) aren't representable.
-
-    Also note that the LimitlessLED color spectrum
-    starts at blue.
-
-    :param red: Red value (0-255).
-    :param green: Green value (0-255).
-    :param blue: Blue value (0-255).
-    :returns: Hue value (0-255).
+def hue_of_color(color):
     """
-    hue = rgb_to_hls(red / 255, green / 255, blue / 255)[0] \
-        * -1 \
-        + 1 \
-        + (2.0/3.0)  # RGB -> BGR
-    return int(math.floor((hue % 1) * 256))
+    Gets the hue of a color.
+    :param color: The RGB color tuple.
+    :return: The hue of the color (0.0-1.0).
+    """
+    return rgb_to_hsv(*[x / 255 for x in color])[0]
+
+
+def saturation_of_color(color):
+    """
+    Gets the saturation of a color.
+    :param color: The RGB color tuple.
+    :return: The saturation of the color (0.0-1.0).
+    """
+    return rgb_to_hsv(*[x / 255 for x in color])[1]
+
+
+def to_rgb(hue, saturation):
+    """
+    Converts hue and saturation to RGB color.
+    :param hue: The hue of the color.
+    :param saturation: The saturation of the color.
+    :return: The RGB color tuple.
+    """
+    return Color(*hsv_to_rgb(hue, saturation, 1))
 
 
 def transition(value, maximum, start, end):
@@ -35,22 +43,6 @@ def transition(value, maximum, start, end):
     :returns: Transitional value.
     """
     return round(start + (end - start) * value / maximum, 2)
-
-
-def transition3(value, maximum, start, end):
-    """ Transition three values.
-
-    :param value: Current iteration.
-    :param maximum: Maximum number of iterations.
-    :param start: Start tuple.
-    :param end: End tuple.
-    :returns: Transitional tuple.
-    """
-    return (
-        transition(value, maximum, start[0], end[0]),
-        transition(value, maximum, start[1], end[1]),
-        transition(value, maximum, start[2], end[2])
-    )
 
 
 def steps(current, target, max_steps):

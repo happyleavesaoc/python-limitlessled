@@ -1,6 +1,6 @@
 # python-limitlessled
 
-`python-limitlessled` controls LimitlessLED bridges. It supports `white` and `rgbw` bulb groups.
+`python-limitlessled` controls LimitlessLED bridges. It supports `white`, `rgbw` and `rgbww` bulb groups as well as the `bridge-led` of newer wifi bridges.
 ## Install
 `pip install limitlessled`
 
@@ -12,6 +12,7 @@ Group names can be any string, but must be unique amongst all bridges.
 ```python
 from limitlessled.bridge import Bridge
 from limitlessled.group.rgbw import RGBW
+from limitlessled.group.rgbww import RGBWW
 from limitlessled.group.white import WHITE
 
 bridge = Bridge('<your bridge ip address>')
@@ -19,6 +20,7 @@ bridge.add_group(1, 'bedroom', RGBW)
 # A group number can support two groups as long as the types differ
 bridge.add_group(2, 'bathroom', WHITE)
 bridge.add_group(2, 'living_room', RGBW)
+bridge.add_group(2, 'kitchen', RGBWW)
 ```
 
 Get access to groups either via the return value of `add_group`, or with the `LimitlessLED` object.
@@ -29,6 +31,9 @@ bedroom = bridge.add_group(1, 'bedroom', RGBW)
 limitlessled = LimitlessLED()
 limitlessled.add_bridge(bridge)
 bedroom = limitlessled.group('bedroom')
+
+# The bridge led can be controlled and acts as a RGBW group
+bridge_led = bridge.bridge_led
 ```
 
 ### Control
