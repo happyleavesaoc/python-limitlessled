@@ -212,7 +212,7 @@ class CommandSetWhiteV6(CommandSetV6):
         :param temperature: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x05, temperature)
+        return self._build_command(0x05, self.convert_temperature(temperature))
 
 
 class CommandSetRgbwV6(CommandSetV6):
