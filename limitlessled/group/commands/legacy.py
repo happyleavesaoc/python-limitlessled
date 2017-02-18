@@ -1,6 +1,5 @@
 """ Command sets for wifi bridge version 5 and lower. """
 
-
 import math
 
 from limitlessled.group.rgbw import RGBW
