@@ -138,7 +138,7 @@ class Bridge(object):
 
         :param number: Group number (1-4).
         :param name: Group name.
-        :param led_type: Either `RGBW` or `WHITE`.
+        :param led_type: Either `RGBW`, `RGBWW`, `WHITE` or `BRIDGE_LED`.
         :returns: Added group.
         """
         group = group_factory(self, number, name, led_type)

@@ -52,4 +52,8 @@ def steps(current, target, max_steps):
     :param target: Target value (0.0-1.0).
     :param max_steps: Maximum number of steps.
     """
+    if current < 0 or current > 1.0:
+        raise ValueError("current value %s is out of bounds (0.0-1.0)", current)
+    if target < 0 or target > 1.0:
+        raise ValueError("target value %s is out of bounds (0.0-1.0)", target)
     return int(abs((current * max_steps) - (target * max_steps)))

@@ -1,4 +1,5 @@
 """ LimtlessLED command sets. """
+import binascii
 
 
 def command_set_factory(bridge, group_number, led_type):
@@ -64,6 +65,21 @@ class Command:
     def select_command(self):
         """ Selection command bytes. """
         return self._select_command
+
+    def __eq__(self, other):
+        """ Command equality. """
+        return (self.bytes == other.bytes and
+                self.group_number == other.group_number and
+                self.select == other.select and
+                self.select_command == other.select_command)
+
+    def __repr__(self):
+        """ String representation. """
+        return '({}, gn={}, s={}, sc={})'.format(
+                    binascii.hexlify(self.bytes).decode(),
+                    self.group_number,
+                    self.select,
+                    self.select_command)
 
 
 class CommandSet:
