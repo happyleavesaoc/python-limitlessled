@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/happyleavesaoc/python-limitlessled.svg?branch=master)](https://travis-ci.org/happyleavesaoc/python-limitlessled)
+
 # python-limitlessled
 
 `python-limitlessled` controls LimitlessLED bridges. It supports `white`, `rgbw` and `rgbww` bulb groups as well as the `bridge-led` of newer wifi bridges.
