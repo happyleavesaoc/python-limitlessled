@@ -126,10 +126,13 @@ class RgbwGroup(Group):
         if color != self.color or brightness != self.brightness:
             if color is None and brightness == self.brightness:
                 return
-            self._transition(duration, hue_of_color(color), brightness)
+            if color is None:
+                self._transition(duration, brightness=brightness)
+            else:
+                self._transition(duration, hue_of_color(color), brightness)
 
     @rate(wait=0.025, reps=1)
-    def _transition(self, duration, hue, brightness):
+    def _transition(self, duration, hue=None, brightness=None):
         """ Transition.
 
         :param duration: Time to transition.
