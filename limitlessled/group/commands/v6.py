@@ -9,23 +9,62 @@ from limitlessled.group.white import WHITE
 from limitlessled.group.commands import CommandSet, Command
 
 
+class CommandV6(Command):
+    """ Represents a single v6 command to be sent to the bridge. """
+
+    PASSWORD_BYTE1 = 0x00
+    PASSWORD_BYTE2 = 0x00
+
+    def __init__(self, cmd_1, cmd_2, remote_style, group_number,
+                 select=False, select_command=None):
+        """
+        Initialize command.
+        :param cmd_1: The first part of the command.
+        :param cmd_1: The second part of the command.
+        :param remote_style: The remote style of the led.
+        :param group_number: Group number (1-4).
+        :param select: If command requires selection.
+        :param select_command: Selection command bytes.
+        """
+        super().__init__(cmd_1, cmd_2, group_number, select, select_command)
+        self._remote_style = remote_style
+
+    def get_bytes(self, bridge):
+        """
+        Gets the full command as bytes.
+        :param bridge: The bridge, to which the command should be sent.
+        """
+        if not bridge.is_ready:
+            raise Exception('The bridge has to be ready to construct command.')
+
+        wb1 = bridge.wb1
+        wb2 = bridge.wb2
+        sn = bridge.sn
+
+        preamble = [0x80, 0x00, 0x00, 0x00, 0x11, wb1, wb2, 0x00, sn, 0x00]
+        cmd = [0x31, self.PASSWORD_BYTE1, self.PASSWORD_BYTE2,
+               self._remote_style, self._cmd_1,
+               self._cmd_2, self._cmd_2, self._cmd_2, self._cmd_2]
+        zone_selector = [self._group_number, 0x00]
+        checksum = sum(cmd + zone_selector) & 0xFF
+
+        return bytearray(preamble + cmd + zone_selector + [checksum])
+
+
 class CommandSetV6(CommandSet):
     """ Base command set for wifi bridge v6. """
 
     SUPPORTED_VERSIONS = [6]
-    PASSWORD_BYTE1 = 0x00
-    PASSWORD_BYTE2 = 0x00
     MAX_HUE = 0xFF
     MAX_SATURATION = 0x64
     MAX_BRIGHTNESS = 0x64
     MAX_TEMPERATURE = 0x64
 
-    def __init__(self, bridge, group_number, remote_style,
+    def __init__(self, group_number, remote_style,
                  brightness_steps=None, hue_steps=None,
                  saturation_steps=None, temperature_steps=None):
         """
         Initialize the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         :param remote_style: The remote style of the device to control.
         :param brightness_steps: The number of brightness steps.
@@ -37,7 +76,7 @@ class CommandSetV6(CommandSet):
         hue_steps = hue_steps or self.MAX_HUE + 1
         saturation_steps = saturation_steps or self.MAX_SATURATION + 1
         temperature_steps = temperature_steps or self.MAX_TEMPERATURE + 1
-        super().__init__(bridge, group_number, brightness_steps,
+        super().__init__(group_number, brightness_steps,
                          hue_steps=hue_steps,
                          saturation_steps=saturation_steps,
                          temperature_steps=temperature_steps)
@@ -97,18 +136,8 @@ class CommandSetV6(CommandSet):
         :param cmd_2: Light command 2.
         :return: The complete command.
         """
-        wb1 = self._bridge.wb1
-        wb2 = self._bridge.wb2
-        sn = self._bridge.sn
 
-        preamble = [0x80, 0x00, 0x00, 0x00, 0x11, wb1, wb2, 0x00, sn, 0x00]
-        cmd = [0x31, self.PASSWORD_BYTE1, self.PASSWORD_BYTE2,
-               self._remote_style, cmd_1, cmd_2, cmd_2, cmd_2, cmd_2]
-        zone_selector = [self._group_number, 0x00]
-        checksum = sum(cmd + zone_selector) & 0xFF
-
-        return Command(preamble + cmd + zone_selector + [checksum],
-                       self._group_number)
+        return CommandV6(cmd_1, cmd_2, self._remote_style, self._group_number)
 
 
 class CommandSetBridgeLightV6(CommandSetV6):
@@ -117,13 +146,12 @@ class CommandSetBridgeLightV6(CommandSetV6):
     SUPPORTED_LED_TYPES = [BRIDGE_LED]
     REMOTE_STYLE = 0x00
 
-    def __init__(self, bridge, group_number):
+    def __init__(self, group_number):
         """
         Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         """
-        super().__init__(bridge, group_number, self.REMOTE_STYLE)
+        super().__init__(group_number, self.REMOTE_STYLE)
 
     def on(self):
         """
@@ -169,13 +197,12 @@ class CommandSetWhiteV6(CommandSetV6):
     SUPPORTED_LED_TYPES = [WHITE]
     REMOTE_STYLE = 0x08
 
-    def __init__(self, bridge, group_number):
+    def __init__(self, group_number):
         """
         Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         """
-        super().__init__(bridge, group_number, self.REMOTE_STYLE)
+        super().__init__(group_number, self.REMOTE_STYLE)
 
     def on(self):
         """
@@ -221,13 +248,12 @@ class CommandSetRgbwV6(CommandSetV6):
     SUPPORTED_LED_TYPES = [RGBW]
     REMOTE_STYLE = 0x07
 
-    def __init__(self, bridge, group_number):
+    def __init__(self, group_number):
         """
         Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         """
-        super().__init__(bridge, group_number, self.REMOTE_STYLE)
+        super().__init__(group_number, self.REMOTE_STYLE)
 
     def on(self):
         """
@@ -280,13 +306,12 @@ class CommandSetRgbwwV6(CommandSetV6):
     SUPPORTED_LED_TYPES = [RGBWW]
     REMOTE_STYLE = 0x08
 
-    def __init__(self, bridge, group_number):
+    def __init__(self, group_number):
         """
         Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         """
-        super().__init__(bridge, group_number, self.REMOTE_STYLE)
+        super().__init__(group_number, self.REMOTE_STYLE)
 
     def on(self):
         """

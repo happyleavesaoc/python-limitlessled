@@ -7,14 +7,46 @@ from limitlessled.group.white import WHITE
 from limitlessled.group.commands import CommandSet, Command
 
 
+class CommandLegacy(Command):
+    """ Represents a single v6 command to be sent to the bridge. """
+
+    SUFFIX_BYTE = 0x00
+    BRIDGE_SHORT_VERSION_MIN = 3
+    BRIDGE_LONG_BYTE = 0x55
+
+    def __init__(self, cmd_1, cmd_2, group_number,
+                 select=False, select_command=None):
+        """
+        Initialize command.
+        :param cmd_1: The first part of the command.
+        :param cmd_1: The second part of the command.
+        :param group_number: Group number (1-4).
+        :param select: If command requires selection.
+        :param select_command: Selection command bytes.
+        """
+        super().__init__(cmd_1, cmd_2, group_number, select, select_command)
+
+    def get_bytes(self, bridge):
+        """
+        Gets the full command as bytes.
+        :param bridge: The bridge, to which the command should be sent.
+        """
+        if self.cmd_2 is not None:
+            cmd = [self.cmd_1, self.cmd_2]
+        else:
+            cmd = [self.cmd_1, self.SUFFIX_BYTE]
+
+        if bridge.version < self.BRIDGE_SHORT_VERSION_MIN:
+            cmd.append(self.BRIDGE_LONG_BYTE)
+
+        return bytearray(cmd)
+
+
 class CommandSetLegacy(CommandSet):
     """ Base command set for legacy wifi bridges. """
 
     SUPPORTED_VERSIONS = [1, 2, 3, 4, 5]
-    SUFFIX_BYTE = 0x00
     BRIGHTNESS_OFFSET = 2
-    BRIDGE_SHORT_VERSION_MIN = 3
-    BRIDGE_LONG_BYTE = 0x55
 
     def convert_brightness(self, brightness):
         """
@@ -47,14 +79,9 @@ class CommandSetLegacy(CommandSet):
         :param select_command: Selection command bytes.
         :return: The complete command.
         """
-        if cmd_2 is None:
-            cmd_2 = self.SUFFIX_BYTE
-        cmd = [cmd_1, cmd_2]
 
-        if self._bridge.version < self.BRIDGE_SHORT_VERSION_MIN:
-            cmd.append(self.BRIDGE_LONG_BYTE)
-
-        return Command(cmd, self._group_number, select, select_command)
+        return CommandLegacy(cmd_1, cmd_2,
+                             self._group_number, select, select_command)
 
 
 class CommandSetWhiteLegacy(CommandSetLegacy):
@@ -66,13 +93,12 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
     BRIGHTNESS_STEPS = 10
     TEMPERATURE_STEPS = 10
 
-    def __init__(self, bridge, group_number):
+    def __init__(self, group_number):
         """
         Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         """
-        super().__init__(bridge, group_number, self.BRIGHTNESS_STEPS,
+        super().__init__(group_number, self.BRIGHTNESS_STEPS,
                          temperature_steps=self.TEMPERATURE_STEPS)
 
     def on(self):
@@ -125,13 +151,12 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
     HUE_STEPS = 255
     BRIGHTNESS_STEPS = 25
 
-    def __init__(self, bridge, group_number):
+    def __init__(self, group_number):
         """
         Initializes the command set.
-        :param bridge: The bridge the leds are connected to.
         :param group_number: The group number.
         """
-        super().__init__(bridge, group_number, self.BRIGHTNESS_STEPS,
+        super().__init__(group_number, self.BRIGHTNESS_STEPS,
                          hue_steps=self.HUE_STEPS)
 
     def on(self):

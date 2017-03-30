@@ -66,6 +66,7 @@ class Bridge(object):
         :param version: Bridge version.
         :param bridge_led_name: Name of the bridge led group.
         """
+        self.is_ready = False
         self.is_closed = False
         self.wait = MIN_WAIT
         self.reps = REPS
@@ -175,15 +176,21 @@ class Bridge(object):
         TODO: Only wait when another command comes in.
         """
         while not self.is_closed:
+            # Wait, until bridge is ready
+            while not self.is_ready:
+                if self.is_closed:
+                    return
+                time.sleep(RECONNECT_TIME)
+
             # Get command from queue.
             (command, reps, wait) = self._command_queue.get()
             # Select group if a different group is currently selected.
             if command.select and self._selected_number != command.group_number:
-                self._send_raw(command.select_command.bytes)
+                self._send_raw(command.select_command.get_bytes(self))
                 time.sleep(SELECT_WAIT)
             # Repeat command as necessary.
             for _ in range(reps):
-                self._send_raw(command.bytes)
+                self._send_raw(command.get_bytes(self))
                 time.sleep(wait)
             self._selected_number = command.group_number
 
@@ -206,7 +213,9 @@ class Bridge(object):
             self._socket.recv_into(response)
             self._wb1 = response[19]
             self._wb2 = response[20]
+            self.is_ready = True
         except socket.timeout:
+            self.is_ready = False
             return False
 
         return True
@@ -226,6 +235,10 @@ class Bridge(object):
         Send keep alive messages continuously to bridge.
         """
         while not self.is_closed:
+            if not self.is_ready:
+                self._reconnect()
+                continue
+
             command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
             self._send_raw(command)
 
@@ -243,6 +256,7 @@ class Bridge(object):
                     break
 
             if not connection_alive:
+                self.is_ready = False
                 self._reconnect()
                 continue
 
@@ -253,4 +267,5 @@ class Bridge(object):
         Closes the connection to the bridge.
         """
         self.is_closed = True
+        self.is_ready = False
 
