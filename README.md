@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/happyleavesaoc/python-limitlessled.svg?branch=master)](https://travis-ci.org/happyleavesaoc/python-limitlessled)
+[![Build Status](https://travis-ci.org/happyleavesaoc/python-limitlessled.svg?branch=master)](https://travis-ci.org/happyleavesaoc/python-limitlessled) [![PyPI version](https://badge.fury.io/py/limitlessled.svg)](https://badge.fury.io/py/limitlessled)
 
 # python-limitlessled
 
