@@ -25,10 +25,13 @@ class TestLegacyCommandSetFactory(unittest.TestCase):
 class TestCommand(unittest.TestCase):
 
     def setUp(self):
-        self.command = Command(b'\x00\x00', 1, select=True, select_command=None)
+        self.command = Command(b'\x00', b'\x01', 1, select=True, select_command=None)
 
-    def test_bytes(self):
-        self.assertEqual(self.command.bytes, b'\x00\x00')
+    def test_cmd_1(self):
+        self.assertEqual(self.command.cmd_1, b'\x00')
+
+    def test_cmd_2(self):
+        self.assertEqual(self.command.cmd_2, b'\x01')
 
     def test_group_number(self):
         self.assertEqual(self.command.group_number, 1)
@@ -43,7 +46,7 @@ class TestCommand(unittest.TestCase):
 class TestCommandSet(unittest.TestCase):
 
     def setUp(self):
-        self.commandset = CommandSet(None, 1, 10)
+        self.commandset = CommandSet(1, 10)
 
     def test_brightness_steps(self):
         self.assertEqual(self.commandset.brightness_steps, 10)
