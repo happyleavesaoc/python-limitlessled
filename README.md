@@ -132,7 +132,7 @@ Pipeline().transition(...)
 
 Wait
 ```python
-Pipeline.()wait(4) # in seconds
+Pipeline.().wait(4) # in seconds
 ```
 
 Repeat
