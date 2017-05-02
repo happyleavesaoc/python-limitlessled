@@ -176,31 +176,48 @@ class Bridge(object):
         TODO: Only wait when another command comes in.
         """
         while not self.is_closed:
-            # Wait, until bridge is ready
-            while not self.is_ready:
+            # Use the lock so we are sure is_ready is not changed during execution
+            self._lock.acquire()
+
+            # Check if bridge is ready and there are
+            if self.is_ready and not self._command_queue.empty():
+                # Get command from queue.
+                (command, reps, wait) = self._command_queue.get()
+                # Select group if a different group is currently selected.
+                if command.select and self._selected_number != command.group_number:
+                    self._send_raw(command.select_command.get_bytes(self))
+                    time.sleep(SELECT_WAIT)
+                # Repeat command as necessary.
+                for _ in range(reps):
+                    self._send_raw(command.get_bytes(self))
+                    time.sleep(wait)
+                self._selected_number = command.group_number
+
+            # Release the lock
+            self._lock.release()
+
+            # Wait a little time if queue is empty
+            if self._command_queue.empty():
+                time.sleep(MIN_WAIT)
+
+            # Wait if bridge is not ready, we're only reading is_ready, no lock needed
+            if not self.is_ready:
                 if self.is_closed:
                     return
                 time.sleep(RECONNECT_TIME)
-
-            # Get command from queue.
-            (command, reps, wait) = self._command_queue.get()
-            # Select group if a different group is currently selected.
-            if command.select and self._selected_number != command.group_number:
-                self._send_raw(command.select_command.get_bytes(self))
-                time.sleep(SELECT_WAIT)
-            # Repeat command as necessary.
-            for _ in range(reps):
-                self._send_raw(command.get_bytes(self))
-                time.sleep(wait)
-            self._selected_number = command.group_number
 
     def _send_raw(self, command):
         """
         Sends an raw command directly to the physical bridge.
         :param command: A bytearray.
         """
-        self._socket.send(bytearray(command))
-        self._sn = (self._sn + 1) % 256
+        try:
+            self._socket.send(bytearray(command))
+            self._sn = (self._sn + 1) % 256
+        except socket.error:
+            # We can get a socket.error exception if the bridge is disconnected,
+            # but we are still sending data. In that case, do nothing.
+            pass
 
     def _init_connection(self):
         """
@@ -208,6 +225,9 @@ class Bridge(object):
         :returns: True, if initialization was successful. False, otherwise.
         """
         try:
+            # We are changing self.is_ready: lock it up!
+            self._lock.acquire()
+
             response = bytearray(22)
             self._send_raw(BRIDGE_INITIALIZATION_COMMAND)
             self._socket.recv_into(response)
@@ -215,10 +235,16 @@ class Bridge(object):
             self._wb2 = response[20]
             self.is_ready = True
         except socket.timeout:
+            # Connection timed out, bridge is not ready for us
             self.is_ready = False
-            return False
+        except socket.error as err:
+            # The bridge is also not ready when there's a socket error
+            self.is_ready = False
+        finally:
+            # Prevent deadlocks: always release the lock
+            self._lock.release()
 
-        return True
+        return self.is_ready
 
     def _reconnect(self):
         """
@@ -239,6 +265,10 @@ class Bridge(object):
                 self._reconnect()
                 continue
 
+            # Acquire the lock to make sure we don't change self.is_ready
+            # while _consume() is sending commands
+            self._lock.acquire()
+
             command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
             self._send_raw(command)
 
@@ -257,10 +287,13 @@ class Bridge(object):
 
             if not connection_alive:
                 self.is_ready = False
-                self._reconnect()
-                continue
 
-            time.sleep(KEEP_ALIVE_TIME)
+            # And release the lock again
+            self._lock.release()
+
+            # Wait for KEEP_ALIVE_TIME seconds before sending next keep-alive message
+            if self.is_ready:
+                time.sleep(KEEP_ALIVE_TIME)
 
     def close(self):
         """
@@ -268,4 +301,3 @@ class Bridge(object):
         """
         self.is_closed = True
         self.is_ready = False
-
