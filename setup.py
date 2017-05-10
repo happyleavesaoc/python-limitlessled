@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='limitlessled',
-    version='1.0.6',
+    version='1.0.7',
     description='Control LimitlessLED products.',
     url='https://github.com/happyleavesaoc/python-limitlessled/',
     license='MIT',
