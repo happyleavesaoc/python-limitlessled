@@ -176,31 +176,54 @@ class Bridge(object):
         TODO: Only wait when another command comes in.
         """
         while not self.is_closed:
-            # Wait, until bridge is ready
-            while not self.is_ready:
+            # Use the lock so we are sure is_ready is not changed during execution
+            # and the socket is not in use
+            with self._lock:
+                # Check if bridge is ready and there are
+                if self.is_ready and not self._command_queue.empty():
+                    # Get command from queue.
+                    (command, reps, wait) = self._command_queue.get()
+                    # Select group if a different group is currently selected.
+                    if command.select and self._selected_number != command.group_number:
+                        if not self._send_raw(command.select_command.get_bytes(self)):
+                            # Stop sending on socket error
+                            self.is_ready = False
+                            continue
+
+                        time.sleep(SELECT_WAIT)
+                    # Repeat command as necessary.
+                    for _ in range(reps):
+                        if not self._send_raw(command.get_bytes(self)):
+                            # Stop sending on socket error
+                            self.is_ready = False
+                            continue
+                        time.sleep(wait)
+
+                    self._selected_number = command.group_number
+
+            # Wait a little time if queue is empty
+            if self._command_queue.empty():
+                time.sleep(MIN_WAIT)
+
+            # Wait if bridge is not ready, we're only reading is_ready, no lock needed
+            if not self.is_ready:
                 if self.is_closed:
                     return
                 time.sleep(RECONNECT_TIME)
-
-            # Get command from queue.
-            (command, reps, wait) = self._command_queue.get()
-            # Select group if a different group is currently selected.
-            if command.select and self._selected_number != command.group_number:
-                self._send_raw(command.select_command.get_bytes(self))
-                time.sleep(SELECT_WAIT)
-            # Repeat command as necessary.
-            for _ in range(reps):
-                self._send_raw(command.get_bytes(self))
-                time.sleep(wait)
-            self._selected_number = command.group_number
 
     def _send_raw(self, command):
         """
         Sends an raw command directly to the physical bridge.
         :param command: A bytearray.
         """
-        self._socket.send(bytearray(command))
-        self._sn = (self._sn + 1) % 256
+        try:
+            self._socket.send(bytearray(command))
+            self._sn = (self._sn + 1) % 256
+            return True
+        except (socket.error, socket.timeout):
+            # We can get a socket.error or timeout exception if the bridge is disconnected,
+            # but we are still sending data. In that case, return False to indicate that data is not sent.
+            return False
 
     def _init_connection(self):
         """
@@ -208,6 +231,9 @@ class Bridge(object):
         :returns: True, if initialization was successful. False, otherwise.
         """
         try:
+            # We are changing self.is_ready: lock it up!
+            self._lock.acquire()
+
             response = bytearray(22)
             self._send_raw(BRIDGE_INITIALIZATION_COMMAND)
             self._socket.recv_into(response)
@@ -215,10 +241,13 @@ class Bridge(object):
             self._wb2 = response[20]
             self.is_ready = True
         except socket.timeout:
+            # Connection timed out, bridge is not ready for us
             self.is_ready = False
-            return False
+        finally:
+            # Prevent deadlocks: always release the lock
+            self._lock.release()
 
-        return True
+        return self.is_ready
 
     def _reconnect(self):
         """
@@ -239,28 +268,31 @@ class Bridge(object):
                 self._reconnect()
                 continue
 
-            command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
-            self._send_raw(command)
+            # Acquire the lock to make sure we don't change self.is_ready
+            # while _consume() is sending commands
+            with self._lock:
+                command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
+                self._send_raw(command)
 
-            start = datetime.now()
-            connection_alive = False
-            while datetime.now() - start < timedelta(seconds=SOCKET_TIMEOUT):
-                response = bytearray(12)
-                try:
-                    self._socket.recv_into(response)
-                except socket.timeout:
-                    break
+                start = datetime.now()
+                connection_alive = False
+                while datetime.now() - start < timedelta(seconds=SOCKET_TIMEOUT):
+                    response = bytearray(12)
+                    try:
+                        self._socket.recv_into(response)
+                    except socket.timeout:
+                        break
 
-                if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
-                    connection_alive = True
-                    break
+                    if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
+                        connection_alive = True
+                        break
 
-            if not connection_alive:
-                self.is_ready = False
-                self._reconnect()
-                continue
+                if not connection_alive:
+                    self.is_ready = False
 
-            time.sleep(KEEP_ALIVE_TIME)
+            # Wait for KEEP_ALIVE_TIME seconds before sending next keep-alive message
+            if self.is_ready:
+                time.sleep(KEEP_ALIVE_TIME)
 
     def close(self):
         """
@@ -268,4 +300,3 @@ class Bridge(object):
         """
         self.is_closed = True
         self.is_ready = False
-
