@@ -66,7 +66,7 @@ class Bridge(object):
         :param version: Bridge version.
         :param bridge_led_name: Name of the bridge led group.
         """
-        self.is_ready = False
+        self.is_ready = True
         self.is_closed = False
         self.wait = MIN_WAIT
         self.reps = REPS
@@ -95,6 +95,9 @@ class Bridge(object):
             # Create bridge led group
             self._bridge_led = group_factory(self, BRIDGE_LED_GROUP,
                                              bridge_led_name, BRIDGE_LED)
+
+            # Set is_ready to False before initing connection
+            self.is_ready = False
 
             # Initialize connection to retrieve bridge session ids (wb1, wb2)
             self._init_connection()
@@ -209,7 +212,13 @@ class Bridge(object):
             if not self.is_ready:
                 if self.is_closed:
                     return
+
+                # Give the reconnect some time
                 time.sleep(RECONNECT_TIME)
+
+                # For older bridges, always try again, there's no keep-alive thread
+                if self.version < 6:
+                    self.is_ready = True
 
     def _send_raw(self, command):
         """
