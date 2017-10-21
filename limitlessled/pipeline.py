@@ -76,7 +76,9 @@ class Pipeline(object):
         self._pipe = []
         self._group = None
         stages = ['on', 'off', 'color', 'transition', 'flash', 'callback',
-                  'repeat', 'brightness', 'wait', 'temperature', 'white']
+                  'repeat', 'brightness', 'wait', 'temperature', 'white',
+                  'white_up', 'white_down', 'red_up', 'red_down',
+                  'green_up', 'green_down', 'blue_up', 'blue_down']
         for name in stages:
             self._add_stage(name)
 
@@ -167,6 +169,22 @@ class Pipeline(object):
             self._group.transition(*stage.args, **stage.kwargs)
         elif stage.name == 'white':
             self._group.white()
+        elif stage.name == 'white_up':
+            self._group.white_up()
+        elif stage.name == 'white_down':
+            self._group.white_down()
+        elif stage.name == 'red_up':
+            self._group.red_up()
+        elif stage.name == 'red_down':
+            self._group.red_down()
+        elif stage.name == 'green_up':
+            self._group.green_up()
+        elif stage.name == 'green_down':
+            self._group.green_down()
+        elif stage.name == 'blue_up':
+            self._group.blue_up()
+        elif stage.name == 'blue_down':
+            self._group.blue_down()
         elif stage.name == 'flash':
             self._group.flash(**stage.kwargs)
         elif stage.name == 'repeat':
