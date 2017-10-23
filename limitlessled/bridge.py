@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 from limitlessled import MIN_WAIT, REPS
 from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
+from limitlessled.group.wrgb import WrgbGroup, WRGB
 from limitlessled.group.rgbww import RgbwwGroup, RGBWW
 from limitlessled.group.white import WhiteGroup, WHITE
 
@@ -35,7 +36,7 @@ def group_factory(bridge, number, name, led_type):
     :param bridge: Member of this bridge.
     :param number: Group number (1-4).
     :param name: Name of group.
-    :param led_type: Either `RGBW`, `RGBWW`, `WHITE` or `BRIDGE_LED`.
+    :param led_type: Either `RGBW`, `WRGB`, `RGBWW`, `WHITE` or `BRIDGE_LED`.
     :returns: New group.
     """
     if led_type in [RGBW, BRIDGE_LED]:
@@ -44,6 +45,8 @@ def group_factory(bridge, number, name, led_type):
         return RgbwwGroup(bridge, number, name)
     elif led_type == WHITE:
         return WhiteGroup(bridge, number, name)
+    elif led_type == WRGB:
+        return WrgbGroup(bridge, number, name)
     else:
         raise ValueError('Invalid LED type: %s', led_type)
 
@@ -142,7 +145,7 @@ class Bridge(object):
 
         :param number: Group number (1-4).
         :param name: Group name.
-        :param led_type: Either `RGBW`, `RGBWW`, `WHITE` or `BRIDGE_LED`.
+        :param led_type: Either `RGBW`, `WRGB`, `RGBWW`, `WHITE` or `BRIDGE_LED`.
         :returns: Added group.
         """
         group = group_factory(self, number, name, led_type)
