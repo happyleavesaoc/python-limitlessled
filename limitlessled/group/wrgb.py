@@ -96,49 +96,49 @@ class WrgbGroup(Group):
         cmd = self.command_set.hue(hue)
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def white_up(self):
         """ Increase white channel. """
         cmd = self.command_set.white_up()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def white_down(self):
         """ Decrease white channel. """
         cmd = self.command_set.white_down()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def red_up(self):
         """ Increase red channel. """
         cmd = self.command_set.red_up()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def red_down(self):
         """ Decrease red channel. """
         cmd = self.command_set.red_down()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def green_up(self):
         """ Increase green channel. """
         cmd = self.command_set.green_up()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def green_down(self):
         """ Decrease green channel. """
         cmd = self.command_set.green_down()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def blue_up(self):
         """ Increase blue channel. """
         cmd = self.command_set.blue_up()
         self.send(cmd)
 
-    @rate(wait=0.025, reps=1)
+    @rate(reps=1)
     def blue_down(self):
         """ Decrease blue channel. """
         cmd = self.command_set.blue_down()
