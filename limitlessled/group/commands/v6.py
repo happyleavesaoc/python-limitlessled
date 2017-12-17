@@ -196,7 +196,7 @@ class CommandSetWhiteV6(CommandSetV6):
     """ Command set for white led light connected to wifi bridge v6. """
 
     SUPPORTED_LED_TYPES = [WHITE]
-    REMOTE_STYLE = 0x08
+    REMOTE_STYLE = 0x01
 
     def __init__(self, group_number):
         """
@@ -210,21 +210,21 @@ class CommandSetWhiteV6(CommandSetV6):
         Build command for turning the led on.
         :return: The command.
         """
-        return self._build_command(0x04, 0x01)
+        return self._build_command(0x01, 0x07)
 
     def off(self):
         """
         Build command for turning the led off.
         :return: The command.
         """
-        return self._build_command(0x04, 0x02)
+        return self._build_command(0x01, 0x08)
 
     def night_light(self):
         """
         Build command for turning the led into night light mode.
         :return: The command.
         """
-        return self._build_command(0x04, 0x05)
+        return self._build_command(0x01, 0x06)
 
     def brightness(self, brightness):
         """
@@ -232,7 +232,7 @@ class CommandSetWhiteV6(CommandSetV6):
         :param brightness: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x03, self.convert_brightness(brightness))
+        return self._build_command(0x01, self.convert_brightness(brightness))
 
     def temperature(self, temperature):
         """
@@ -240,7 +240,7 @@ class CommandSetWhiteV6(CommandSetV6):
         :param temperature: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x05, self.convert_temperature(temperature))
+        return self._build_command(0x01, self.convert_temperature(temperature))
 
 
 class CommandSetRgbwV6(CommandSetV6):
