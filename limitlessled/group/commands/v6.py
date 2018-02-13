@@ -270,48 +270,19 @@ class CommandSetRgbwV6(CommandSetV6):
         """
         return self._build_command(0x03, 0x02)
 
-    def hue(self, hue):
+    def night_light(self):
         """
-        Build command for setting the hue of the led.
-        :param hue: Value to set (0.0-1.0).
+        Build command for turning the led into night light mode.
         :return: The command.
         """
-        return self._build_command(0x01, self.convert_hue(hue, True))
+        return self._build_command(0x03, 0x06)
 
-    def brightness(self, brightness):
+    def white(self):
         """
-        Build command for setting the brightness of the led.
-        :param brightness: Value to set (0.0-1.0).
+        Build command for turning the led into white mode.
         :return: The command.
         """
-        return self._build_command(0x02, self.convert_brightness(brightness))
-
-class CommandSetWrgbV6(CommandSetV6):
-    """ Command set for WRGB led light connected to wifi bridge v6. """
-
-    SUPPORTED_LED_TYPES = [WRGB]
-    REMOTE_STYLE = 0x06
-
-    def __init__(self, group_number):
-        """
-        Initializes the command set.
-        :param group_number: The group number.
-        """
-        super().__init__(group_number, self.REMOTE_STYLE)
-
-    def on(self):
-        """
-        Build command for turning the led on.
-        :return: The command.
-        """
-        return self._build_command(0x03, 0x01)
-
-    def off(self):
-        """
-        Build command for turning the led off.
-        :return: The command.
-        """
-        return self._build_command(0x03, 0x02)
+        return self._build_command(0x03, 0x05)
 
     def hue(self, hue):
         """
