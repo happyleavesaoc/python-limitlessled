@@ -29,6 +29,10 @@ class TestWhiteLegacyCommands(unittest.TestCase):
     def test_off(self):
         self.assertEqual(self.commands.off(), CommandLegacy(0x3b, None, 1))
 
+    def test_night_light(self):
+        sc = CommandLegacy(0x3b, None, 1)
+        self.assertEqual(self.commands.night_light(), CommandLegacy(0xbb, None, 1, select=True, select_command=sc))
+
     def test_dimmer(self):
         sc = CommandLegacy(0x38, None, 1)
         self.assertEqual(self.commands.dimmer(), CommandLegacy(0x34, None, 1, select=True, select_command=sc))
@@ -56,6 +60,10 @@ class TestRgbwLegacyCommands(unittest.TestCase):
 
     def test_off(self):
         self.assertEqual(self.commands.off(), CommandLegacy(0x46, None, 1))
+
+    def test_night_light(self):
+        sc = CommandLegacy(0x46, None, 1)
+        self.assertEqual(self.commands.night_light(), CommandLegacy(0xc6, None, 1, select=True, select_command=sc))
 
     def test_white(self):
         sc = CommandLegacy(0x45, None, 1)
