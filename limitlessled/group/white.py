@@ -68,7 +68,7 @@ class WhiteGroup(Group):
             self._temperature = temperature
         except AttributeError:
             self._setter('_temperature', temperature,
-                         self._coolest, self._warmest,
+                         self._warmest, self._coolest,
                          self._to_temperature)
 
     def transition(self, duration, brightness=None, temperature=None):
@@ -168,7 +168,7 @@ class WhiteGroup(Group):
         """
         self._to_value(self._temperature, temperature,
                        self.command_set.temperature_steps,
-                       self._cooler, self._warmer)
+                       self._warmer, self._cooler)
 
     @rate(reps=1)
     def _to_value(self, current, target, max_steps, step_down, step_up):
@@ -203,14 +203,14 @@ class WhiteGroup(Group):
     @rate(wait=0.025, reps=2)
     def _warmest(self):
         """ Group temperature as warm as possible. """
-        for _ in range(steps(self.temperature, 1.0,
+        for _ in range(steps(self.temperature, 0.0,
                              self.command_set.temperature_steps)):
             self._warmer()
 
     @rate(wait=0.025, reps=2)
     def _coolest(self):
         """ Group temperature as cool as possible. """
-        for _ in range(steps(self.temperature, 0.0,
+        for _ in range(steps(self.temperature, 1.0,
                              self.command_set.temperature_steps)):
             self._cooler()
 
