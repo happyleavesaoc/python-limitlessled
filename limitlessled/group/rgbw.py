@@ -56,6 +56,11 @@ class RgbwGroup(Group):
         cmd = self.command_set.white()
         self.send(cmd)
 
+    def night_light(self):
+        """ Set night light mode. """
+        cmd = self.command_set.night_light()
+        self.send(cmd)
+
     @property
     def brightness(self):
         """ Brightness property.
