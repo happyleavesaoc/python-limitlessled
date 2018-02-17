@@ -5,7 +5,7 @@ import time
 
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
-from limitlessled.util import steps, hue_of_color
+from limitlessled.util import steps, hue_of_color, saturation_of_color
 
 
 RGBW = 'rgbw'
@@ -44,7 +44,7 @@ class RgbwGroup(Group):
 
         :param color: RGB color tuple.
         """
-        if color == RGB_WHITE:
+        if saturation_of_color(color) == 0:
             self.white()
             return
         self._color = color
