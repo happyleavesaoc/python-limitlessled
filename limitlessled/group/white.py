@@ -25,6 +25,11 @@ class WhiteGroup(Group):
         super().__init__(bridge, number, name, WHITE)
         self._temperature = 0.5
 
+    def night_light(self):
+        """ Set night light mode. """
+        cmd = self.command_set.night_light()
+        self.send(cmd)
+
     @property
     def brightness(self):
         """ Brightness property.

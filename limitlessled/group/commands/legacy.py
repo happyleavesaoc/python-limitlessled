@@ -90,6 +90,7 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
     SUPPORTED_LED_TYPES = [WHITE]
     ON_BYTES = [0x38, 0x3D, 0x37, 0x32]
     OFF_BYTES = [0x3B, 0x33, 0x3A, 0x36]
+    NIGHT_BYTES = [0xBB, 0xB3, 0xBA, 0xB6]
     BRIGHTNESS_STEPS = 10
     TEMPERATURE_STEPS = 10
 
@@ -114,6 +115,14 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
         :return: The command.
         """
         return self._build_command(self.OFF_BYTES[self._group_number - 1])
+
+    def night_light(self):
+        """
+        Build command for turning the led to night light mode.
+        :return: The command.
+        """
+        return self._build_command(self.NIGHT_BYTES[self._group_number - 1],
+                                   select=True, select_command=self.off())
 
     def dimmer(self):
         """
@@ -172,6 +181,14 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         :return: The command.
         """
         return self._build_command(self._offset(0x46))
+
+    def night_light(self):
+        """
+        Build command for turning the led to night light mode.
+        :return: The command.
+        """
+        return self._build_command(self._offset(0xC6),
+                                   select=True, select_command=self.off())
 
     def white(self):
         """
