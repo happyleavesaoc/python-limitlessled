@@ -44,12 +44,10 @@ class RgbwwGroup(Group):
 
         :param color: RGB color tuple.
         """
-        if color == RGB_WHITE:
-            self.white()
-            return
         self._color = color
-        self.hue = hue_of_color(color)
         self.saturation = saturation_of_color(color)
+        if self.saturation != 0:
+            self.hue = hue_of_color(color)
 
     def white(self):
         """ Set color to white. """

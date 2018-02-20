@@ -7,6 +7,7 @@ from limitlessled.group.rgbw import RGBW, BRIDGE_LED
 from limitlessled.group.rgbww import RGBWW
 from limitlessled.group.wrgb import WRGB
 from limitlessled.group.white import WHITE
+from limitlessled.group.dimmer import DIMMER
 from limitlessled.group.commands import CommandSet, Command
 
 
@@ -242,6 +243,47 @@ class CommandSetWhiteV6(CommandSetV6):
         """
         return self._build_command(0x01, self.convert_temperature(temperature))
 
+class CommandSetDimmerV6(CommandSetV6):
+    """ Command set for Dimmer LED dimmer (1CH MiLight dimmer) connected to wifi bridge v6. """
+
+    SUPPORTED_LED_TYPES = [DIMMER]
+    REMOTE_STYLE = 0x03
+
+    def __init__(self, group_number):
+        """
+        Initializes the command set.
+        :param group_number: The group number.
+        """
+        super().__init__(group_number, self.REMOTE_STYLE)
+
+    def on(self):
+        """
+        Build command for turning the dimmer on.
+        :return: The command.
+        """
+        return self._build_command(0x04, 0x03)
+
+    def off(self):
+        """
+        Build command for turning the dimmer off.
+        :return: The command.
+        """
+        return self._build_command(0x04, 0x04)
+
+    def night_light(self):
+        """
+        Build command for turning the dimmer into night light mode.
+        :return: The command.
+        """
+        return self._build_command(0x04, 0x02)
+
+    def brightness(self, brightness):
+        """
+        Build command for setting the brightness of the controller.
+        :param brightness: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x01, self.convert_brightness(brightness))
 
 class CommandSetRgbwV6(CommandSetV6):
     """ Command set for RGBW led light connected to wifi bridge v6. """
