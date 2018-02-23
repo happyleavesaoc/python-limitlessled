@@ -182,49 +182,46 @@ class Bridge(object):
         be used by one thread at a time. Note that this can and
         will delay commands if multiple groups are attempting
         to communicate at the same time on the same bridge.
-
-        TODO: Only wait when another command comes in.
         """
         while not self.is_closed:
+            # Get command from queue.
+            msg = self._command_queue.get()
+
+            # Closed
+            if msg is None:
+                return
+
             # Use the lock so we are sure is_ready is not changed during execution
             # and the socket is not in use
             with self._lock:
-                # Check if bridge is ready and there are
-                if self.is_ready and not self._command_queue.empty():
-                    # Get command from queue.
-                    (command, reps, wait) = self._command_queue.get()
+                # Check if bridge is ready
+                if self.is_ready:
+                    (command, reps, wait) = msg
+
                     # Select group if a different group is currently selected.
                     if command.select and self._selected_number != command.group_number:
-                        if not self._send_raw(command.select_command.get_bytes(self)):
+                        if self._send_raw(command.select_command.get_bytes(self)):
+                            self._selected_number = command.group_number
+                            time.sleep(SELECT_WAIT)
+                        else:
                             # Stop sending on socket error
                             self.is_ready = False
-                            continue
 
-                        time.sleep(SELECT_WAIT)
                     # Repeat command as necessary.
                     for _ in range(reps):
-                        if not self._send_raw(command.get_bytes(self)):
-                            # Stop sending on socket error
-                            self.is_ready = False
-                            continue
-                        time.sleep(wait)
-
-                    self._selected_number = command.group_number
-
-            # Wait a little time if queue is empty
-            if self._command_queue.empty():
-                time.sleep(MIN_WAIT)
+                        if self.is_ready:
+                            if self._send_raw(command.get_bytes(self)):
+                                time.sleep(wait)
+                            else:
+                                # Stop sending on socket error
+                                self.is_ready = False
 
             # Wait if bridge is not ready, we're only reading is_ready, no lock needed
-            if not self.is_ready:
-                if self.is_closed:
-                    return
-
-                # Give the reconnect some time
-                time.sleep(RECONNECT_TIME)
-
+            if not self.is_ready and not self.is_closed:
                 # For older bridges, always try again, there's no keep-alive thread
                 if self.version < 6:
+                    # Give the reconnect some time
+                    time.sleep(RECONNECT_TIME)
                     self.is_ready = True
 
     def _send_raw(self, command):
@@ -311,3 +308,4 @@ class Bridge(object):
         """
         self.is_closed = True
         self.is_ready = False
+        self._command_queue.put(None)
