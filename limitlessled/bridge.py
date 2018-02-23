@@ -2,6 +2,7 @@
 
 import queue
 import socket
+import select
 import time
 import threading
 from datetime import datetime, timedelta
@@ -278,36 +279,31 @@ class Bridge(object):
         """
         Send keep alive messages continuously to bridge.
         """
+        send_next_keep_alive_at = 0
         while not self.is_closed:
             if not self.is_ready:
                 self._reconnect()
                 continue
 
-            # Acquire the lock to make sure we don't change self.is_ready
-            # while _consume() is sending commands
-            with self._lock:
+            if time.monotonic() > send_next_keep_alive_at:
                 command = KEEP_ALIVE_COMMAND_PREAMBLE + [self.wb1, self.wb2]
                 self._send_raw(command)
+                need_response_by = time.monotonic() + KEEP_ALIVE_TIME
 
-                start = datetime.now()
-                connection_alive = False
-                while datetime.now() - start < timedelta(seconds=SOCKET_TIMEOUT):
-                    response = bytearray(12)
-                    try:
-                        self._socket.recv_into(response)
-                    except socket.timeout:
-                        break
+            # Wait for responses
+            timeout = max(0, need_response_by - time.monotonic())
+            ready = select.select([self._socket], [], [], timeout)
+            if ready[0]:
+                response = bytearray(12)
+                self._socket.recv_into(response)
 
-                    if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
-                        connection_alive = True
-                        break
-
-                if not connection_alive:
+                if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
+                    send_next_keep_alive_at = need_response_by
+            elif send_next_keep_alive_at < need_response_by:
+                # Acquire the lock to make sure we don't change self.is_ready
+                # while _consume() is sending commands
+                with self._lock:
                     self.is_ready = False
-
-            # Wait for KEEP_ALIVE_TIME seconds before sending next keep-alive message
-            if self.is_ready:
-                time.sleep(KEEP_ALIVE_TIME)
 
     def close(self):
         """
