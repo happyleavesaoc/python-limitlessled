@@ -131,7 +131,8 @@ class CommandSetV6(CommandSet):
 
         return hue % (self.MAX_HUE + 1)
 
-    def _build_command(self, cmd_1, cmd_2):
+    def _build_command(self, cmd_1, cmd_2,
+                       select=False, select_command=None):
         """
         Constructs the complete command.
         :param cmd_1: Light command 1.
@@ -139,7 +140,8 @@ class CommandSetV6(CommandSet):
         :return: The complete command.
         """
 
-        return CommandV6(cmd_1, cmd_2, self._remote_style, self._group_number)
+        return CommandV6(cmd_1, cmd_2, self._remote_style, self._group_number,
+                         select, select_command)
 
 
 class CommandSetBridgeLightV6(CommandSetV6):
@@ -227,21 +229,33 @@ class CommandSetWhiteV6(CommandSetV6):
         """
         return self._build_command(0x01, 0x06)
 
-    def brightness(self, brightness):
+    def dimmer(self):
         """
-        Build command for setting the brightness of the led.
-        :param brightness: Value to set (0.0-1.0).
+        Build command for setting the brightness one step dimmer.
         :return: The command.
         """
-        return self._build_command(0x01, self.convert_brightness(brightness))
+        return self._build_command(0x01, 0x02, select=True, select_command=self.on())
 
-    def temperature(self, temperature):
+    def brighter(self):
         """
-        Build command for setting the temperature of the led.
-        :param temperature: Value to set (0.0-1.0).
+        Build command for setting the brightness one step brighter.
         :return: The command.
         """
-        return self._build_command(0x01, self.convert_temperature(temperature))
+        return self._build_command(0x01, 0x01, select=True, select_command=self.on())
+
+    def cooler(self):
+        """
+        Build command for setting the temperature one step cooler.
+        :return: The command.
+        """
+        return self._build_command(0x01, 0x04, select=True, select_command=self.on())
+
+    def warmer(self):
+        """
+        Build command for setting the temperature one step warmer.
+        :return: The command.
+        """
+        return self._build_command(0x01, 0x03, select=True, select_command=self.on())
 
 class CommandSetDimmerV6(CommandSetV6):
     """ Command set for Dimmer LED dimmer (1CH MiLight dimmer) connected to wifi bridge v6. """
