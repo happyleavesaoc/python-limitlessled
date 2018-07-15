@@ -41,7 +41,7 @@ class CommandV6(Command):
 
         wb1 = bridge.wb1
         wb2 = bridge.wb2
-        sn = bridge.sn
+        sn = bridge.next_sn()
 
         preamble = [0x80, 0x00, 0x00, 0x00, 0x11, wb1, wb2, 0x00, sn, 0x00]
         cmd = [0x31, self.PASSWORD_BYTE1, self.PASSWORD_BYTE2,
