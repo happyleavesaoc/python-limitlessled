@@ -20,6 +20,7 @@ BRIDGE_VERSION = 6
 BRIDGE_LED_GROUP = 1
 BRIDGE_LED_NAME = 'bridge'
 SELECT_WAIT = 0.025
+ACK_WAIT = 0.3
 BRIDGE_INITIALIZATION_COMMAND = [0x20, 0x00, 0x00, 0x00, 0x16, 0x02, 0x62,
                                  0x3a, 0xd5, 0xed, 0xa3, 0x01, 0xae, 0x08,
                                  0x2d, 0x46, 0x61, 0x41, 0xa7, 0xf6, 0xdc,
@@ -59,6 +60,10 @@ def group_factory(bridge, number, name, led_type):
 class Bridge(object):
     """ Represents a LimitlessLED bridge. """
 
+    # Share a single lock between all bridges. This is to avoid bulbs getting
+    # overloaded with simultaneous messages from multiple bridges.
+    _shared_lock = threading.Lock()
+
     def __init__(self, ip, port=BRIDGE_PORT, version=BRIDGE_VERSION,
                  bridge_led_name=BRIDGE_LED_NAME):
         """ Initialize bridge.
@@ -87,7 +92,7 @@ class Bridge(object):
         self._socket.connect((ip, port))
         self._command_queue = queue.Queue()
         self._ack_queue = queue.Queue()
-        self._lock = threading.Lock()
+        self._lock = self._shared_lock
         self.active = 0
         self._selected_number = None
 
@@ -219,8 +224,9 @@ class Bridge(object):
                                 while self.sn != self._ack_queue.get(timeout=wait):
                                     pass
 
-                                # ACK received, stop repeating
+                                # ACK received, stop repeating and throtte next command
                                 todo = 0
+                                time.sleep(ACK_WAIT)
                             except queue.Empty:
                                 todo = todo - 1
                         else:
