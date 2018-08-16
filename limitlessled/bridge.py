@@ -60,6 +60,10 @@ def group_factory(bridge, number, name, led_type):
 class Bridge(object):
     """ Represents a LimitlessLED bridge. """
 
+    # Share a single lock between all bridges. This is to avoid bulbs getting
+    # overloaded with simultaneous messages from multiple bridges.
+    _shared_lock = threading.Lock()
+
     def __init__(self, ip, port=BRIDGE_PORT, version=BRIDGE_VERSION,
                  bridge_led_name=BRIDGE_LED_NAME):
         """ Initialize bridge.
@@ -88,7 +92,7 @@ class Bridge(object):
         self._socket.connect((ip, port))
         self._command_queue = queue.Queue()
         self._ack_queue = queue.Queue()
-        self._lock = threading.Lock()
+        self._lock = self._shared_lock
         self.active = 0
         self._selected_number = None
 
