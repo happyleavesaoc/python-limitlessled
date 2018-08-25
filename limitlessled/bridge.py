@@ -253,7 +253,7 @@ class Bridge(object):
             self._wb1 = response[19]
             self._wb2 = response[20]
             self.is_ready = True
-        except socket.timeout:
+        except (socket.error, socket.timeout):
             # Connection timed out, bridge is not ready for us
             self.is_ready = False
         finally:
@@ -291,11 +291,15 @@ class Bridge(object):
             timeout = max(0, need_response_by - time.monotonic())
             ready = select.select([self._socket], [], [], timeout)
             if ready[0]:
-                response = bytearray(12)
-                self._socket.recv_into(response)
+                try:
+                    response = bytearray(12)
+                    self._socket.recv_into(response)
 
-                if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
-                    send_next_keep_alive_at = need_response_by
+                    if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
+                        send_next_keep_alive_at = need_response_by
+                except (socket.error, socket.timeout):
+                    with self._lock:
+                        self.is_ready = False
             elif send_next_keep_alive_at < need_response_by:
                 # Acquire the lock to make sure we don't change self.is_ready
                 # while _consume() is sending commands
