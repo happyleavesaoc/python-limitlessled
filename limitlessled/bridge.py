@@ -26,7 +26,6 @@ BRIDGE_INITIALIZATION_COMMAND = [0x20, 0x00, 0x00, 0x00, 0x16, 0x02, 0x62,
                                  0xaf, 0xfe, 0xf7, 0x00, 0x00, 0x1e]
 KEEP_ALIVE_COMMAND_PREAMBLE = [0xD0, 0x00, 0x00, 0x00, 0x02]
 KEEP_ALIVE_RESPONSE_PREAMBLE = [0xd8, 0x0, 0x0, 0x0, 0x07]
-COMMAND_RESPONSE_PREAMBLE = [0x88, 0x00, 0x00, 0x00, 0x03, 0x00]
 KEEP_ALIVE_TIME = 5
 RECONNECT_TIME = 5
 SOCKET_TIMEOUT = 5
@@ -86,7 +85,6 @@ class Bridge(object):
         self._socket.settimeout(SOCKET_TIMEOUT)
         self._socket.connect((ip, port))
         self._command_queue = queue.Queue()
-        self._ack_queue = queue.Queue()
         self._lock = threading.Lock()
         self.active = 0
         self._selected_number = None
@@ -169,11 +167,10 @@ class Bridge(object):
         self._command_queue.put((command, reps, wait))
         # Wait before accepting another command.
         # This keeps individual groups relatively synchronized.
-        if self.version < 6:
-            sleep = reps * wait * self.active
-            if command.select and self._selected_number != command.group_number:
-                sleep += SELECT_WAIT
-            time.sleep(sleep)
+        sleep = reps * wait * self.active
+        if command.select and self._selected_number != command.group_number:
+            sleep += SELECT_WAIT
+        time.sleep(sleep)
 
     def _consume(self):
         """ Consume commands from the queue.
@@ -211,21 +208,13 @@ class Bridge(object):
                             self.is_ready = False
 
                     # Repeat command as necessary.
-                    command_bytes = command.get_bytes(self)
-                    todo = reps
-                    while todo > 0 and self.is_ready:
-                        if self._send_raw(command_bytes):
-                            try:
-                                while self.sn != self._ack_queue.get(timeout=wait):
-                                    pass
-
-                                # ACK received, stop repeating
-                                todo = 0
-                            except queue.Empty:
-                                todo = todo - 1
-                        else:
-                            # Stop sending on socket error
-                            self.is_ready = False
+                    for _ in range(reps):
+                        if self.is_ready:
+                            if self._send_raw(command.get_bytes(self)):
+                                time.sleep(wait)
+                            else:
+                                # Stop sending on socket error
+                                self.is_ready = False
 
             # Wait if bridge is not ready, we're only reading is_ready, no lock needed
             if not self.is_ready and not self.is_closed:
@@ -242,18 +231,12 @@ class Bridge(object):
         """
         try:
             self._socket.send(bytearray(command))
+            self._sn = (self._sn + 1) % 256
             return True
         except (socket.error, socket.timeout):
             # We can get a socket.error or timeout exception if the bridge is disconnected,
             # but we are still sending data. In that case, return False to indicate that data is not sent.
             return False
-
-    def next_sn(self):
-        """
-        Increases the sequential byte and returns it.
-        """
-        self._sn = (self._sn + 1) % 256
-        return self._sn
 
     def _init_connection(self):
         """
@@ -270,7 +253,7 @@ class Bridge(object):
             self._wb1 = response[19]
             self._wb2 = response[20]
             self.is_ready = True
-        except socket.timeout:
+        except (socket.error, socket.timeout):
             # Connection timed out, bridge is not ready for us
             self.is_ready = False
         finally:
@@ -291,8 +274,7 @@ class Bridge(object):
 
     def _keep_alive(self):
         """
-        Send keep alive messages continuously to bridge and
-        handle command responses.
+        Send keep alive messages continuously to bridge.
         """
         send_next_keep_alive_at = 0
         while not self.is_closed:
@@ -309,14 +291,15 @@ class Bridge(object):
             timeout = max(0, need_response_by - time.monotonic())
             ready = select.select([self._socket], [], [], timeout)
             if ready[0]:
-                response = bytearray(12)
-                self._socket.recv_into(response)
+                try:
+                    response = bytearray(12)
+                    self._socket.recv_into(response)
 
-                if response.startswith(bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE)):
-                    send_next_keep_alive_at = need_response_by
-                elif response.startswith(bytearray(COMMAND_RESPONSE_PREAMBLE)):
-                    sn = response[len(COMMAND_RESPONSE_PREAMBLE)]
-                    self._ack_queue.put(sn)
+                    if response[:5] == bytearray(KEEP_ALIVE_RESPONSE_PREAMBLE):
+                        send_next_keep_alive_at = need_response_by
+                except (socket.error, socket.timeout):
+                    with self._lock:
+                        self.is_ready = False
             elif send_next_keep_alive_at < need_response_by:
                 # Acquire the lock to make sure we don't change self.is_ready
                 # while _consume() is sending commands
