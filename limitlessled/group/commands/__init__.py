@@ -15,12 +15,14 @@ def command_set_factory(bridge, group_number, led_type):
     from limitlessled.group.commands.v6 import (
         CommandSetBridgeLightV6, CommandSetWhiteV6,
         CommandSetDimmerV6, CommandSetRgbwV6,
-        CommandSetRgbwwV6, CommandSetWrgbV6)
+        CommandSetRgbwwV6, CommandSetWrgbV6,
+        CommandSetEightzoneV6)
 
     command_sets = [CommandSetWhiteLegacy, CommandSetRgbwLegacy,
                     CommandSetBridgeLightV6, CommandSetWhiteV6,
                     CommandSetDimmerV6, CommandSetRgbwV6,
-                    CommandSetRgbwwV6, CommandSetWrgbV6]
+                    CommandSetRgbwwV6, CommandSetWrgbV6,
+                    CommandSetEightzoneV6]
     try:
         cls = next(cs for cs in command_sets if
                    bridge.version in cs.SUPPORTED_VERSIONS and

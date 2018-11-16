@@ -5,6 +5,7 @@ import math
 
 from limitlessled.group.rgbw import RGBW, BRIDGE_LED
 from limitlessled.group.rgbww import RGBWW
+from limitlessled.group.eightzone import EIGHTZONE
 from limitlessled.group.wrgb import WRGB
 from limitlessled.group.white import WHITE
 from limitlessled.group.dimmer import DIMMER
@@ -542,3 +543,78 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x05, self.convert_temperature(temperature))
+
+class CommandSetEightzoneV6(CommandSetV6):
+    """ Command set for Eight Zones led light connected to wifi bridge v6. """
+
+    SUPPORTED_LED_TYPES = [EIGHTZONE]
+    REMOTE_STYLE = 0x0A
+
+    def __init__(self, group_number):
+        """
+        Initializes the command set.
+        :param group_number: The group number.
+        """
+        super().__init__(group_number, self.REMOTE_STYLE)
+
+    def on(self):
+        """
+        Build command for turning the led on.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x01)
+
+    def off(self):
+        """
+        Build command for turning the led off.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x02)
+
+    def night_light(self):
+        """
+        Build command for turning the led into night light mode.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x64)
+
+    def white(self, temperature=1):
+        """
+        Build command for turning the led into white mode.
+        :param: The temperature to set.
+        :return: The command.
+        """
+        return self.temperature(temperature)
+
+    def hue(self, hue):
+        """
+        Build command for setting the hue of the led.
+        :param hue: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x01, self.convert_hue(hue))
+
+    def saturation(self, saturation):
+        """
+        Build command for setting the saturation of the led.
+        :param saturation: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x03, self.convert_saturation(saturation))
+
+    def brightness(self, brightness):
+        """
+        Build command for setting the brightness of the led.
+        :param brightness: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x04, self.convert_brightness(brightness))
+
+    def temperature(self, temperature):
+        """
+        Build command for setting the temperature of the led.
+        :param temperature: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x02, self.convert_temperature(temperature))
+

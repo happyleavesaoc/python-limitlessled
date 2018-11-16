@@ -11,6 +11,7 @@ from limitlessled import MIN_WAIT, REPS
 from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
 from limitlessled.group.wrgb import WrgbGroup, WRGB
 from limitlessled.group.rgbww import RgbwwGroup, RGBWW
+from limitlessled.group.eightzone import EightzoneGroup, EIGHTZONE
 from limitlessled.group.white import WhiteGroup, WHITE
 from limitlessled.group.dimmer import DimmerGroup, DIMMER
 
@@ -38,13 +39,15 @@ def group_factory(bridge, number, name, led_type):
     :param bridge: Member of this bridge.
     :param number: Group number (1-4).
     :param name: Name of group.
-    :param led_type: Either `RGBW`, `WRGB`, `RGBWW`, `WHITE`, `DIMMER` or `BRIDGE_LED`.
+    :param led_type: Either `RGBW`, `WRGB`, `RGBWW`, `WHITE`, `EIGHTZONE`, `DIMMER` or `BRIDGE_LED`.
     :returns: New group.
     """
     if led_type in [RGBW, BRIDGE_LED]:
         return RgbwGroup(bridge, number, name, led_type)
     elif led_type == RGBWW:
         return RgbwwGroup(bridge, number, name)
+    elif led_type == EIGHTZONE:
+        return EightzoneGroup(bridge, number, name)
     elif led_type == WHITE:
         return WhiteGroup(bridge, number, name)
     elif led_type == DIMMER:
