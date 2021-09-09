@@ -85,6 +85,16 @@ class Group(object):
             cmd = self.command_set.on()
         self.send(cmd)
 
+    def link(self):
+        """ Link new lights. """
+        cmd = self.command_set.link()
+        self.send(cmd)
+
+    def unlink(self):
+        """ Unlink linked lights. """
+        cmd = self.command_set.unlink()
+        self.send(cmd)
+
     @property
     def bridge(self):
         """ Bridge property. """

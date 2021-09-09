@@ -17,8 +17,12 @@ class CommandV6(Command):
     PASSWORD_BYTE1 = 0x00
     PASSWORD_BYTE2 = 0x00
 
+    TYPE_CONTROL = 0x31
+    TYPE_LINK = 0x3D
+    TYPE_UNLINK = 0x3E
+
     def __init__(self, cmd_1, cmd_2, remote_style, group_number,
-                 select=False, select_command=None):
+                 select=False, select_command=None, command_type=0x31):
         """
         Initialize command.
         :param cmd_1: The first part of the command.
@@ -27,9 +31,11 @@ class CommandV6(Command):
         :param group_number: Group number (1-4).
         :param select: If command requires selection.
         :param select_command: Selection command bytes.
+        :param command_type: Whether the command is for control, link, or unlink
         """
         super().__init__(cmd_1, cmd_2, group_number, select, select_command)
         self._remote_style = remote_style
+        self.type = command_type
 
     def get_bytes(self, bridge):
         """
@@ -44,7 +50,7 @@ class CommandV6(Command):
         sn = bridge.sn
 
         preamble = [0x80, 0x00, 0x00, 0x00, 0x11, wb1, wb2, 0x00, sn, 0x00]
-        cmd = [0x31, self.PASSWORD_BYTE1, self.PASSWORD_BYTE2,
+        cmd = [self.type, self.PASSWORD_BYTE1, self.PASSWORD_BYTE2,
                self._remote_style, self._cmd_1,
                self._cmd_2, self._cmd_2, self._cmd_2, self._cmd_2]
         zone_selector = [self._group_number, 0x00]
@@ -132,16 +138,17 @@ class CommandSetV6(CommandSet):
         return hue % (self.MAX_HUE + 1)
 
     def _build_command(self, cmd_1, cmd_2,
-                       select=False, select_command=None):
+                       select=False, select_command=None, command_type=0x31):
         """
         Constructs the complete command.
         :param cmd_1: Light command 1.
         :param cmd_2: Light command 2.
+        :param command_type: Whether the command is for control, link, or unlink
         :return: The complete command.
         """
 
         return CommandV6(cmd_1, cmd_2, self._remote_style, self._group_number,
-                         select, select_command)
+                         select, select_command, command_type)
 
 
 class CommandSetBridgeLightV6(CommandSetV6):
@@ -222,6 +229,20 @@ class CommandSetWhiteV6(CommandSetV6):
         """
         return self._build_command(0x01, 0x08)
 
+    def link(self):
+        """
+        Build command for linking new lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_LINK)
+
+    def unlink(self):
+        """
+        Build command for unlinking linked lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_UNLINK)
+
     def night_light(self):
         """
         Build command for turning the led into night light mode.
@@ -284,6 +305,20 @@ class CommandSetDimmerV6(CommandSetV6):
         """
         return self._build_command(0x04, 0x04)
 
+    def link(self):
+        """
+        Build command for linking new lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_LINK)
+
+    def unlink(self):
+        """
+        Build command for unlinking linked lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_UNLINK)
+
     def night_light(self):
         """
         Build command for turning the dimmer into night light mode.
@@ -325,6 +360,20 @@ class CommandSetRgbwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x03, 0x02)
+
+    def link(self):
+        """
+        Build command for linking new lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_LINK)
+
+    def unlink(self):
+        """
+        Build command for unlinking linked lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_UNLINK)
 
     def night_light(self):
         """
@@ -382,6 +431,20 @@ class CommandSetWrgbV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x03, 0x02)
+
+    def link(self):
+        """
+        Build command for linking new lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_LINK)
+
+    def unlink(self):
+        """
+        Build command for unlinking linked lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_UNLINK)
 
     def night_light(self):
         """
@@ -495,6 +558,20 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x04, 0x02)
+
+    def link(self):
+        """
+        Build command for linking new lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_LINK)
+
+    def unlink(self):
+        """
+        Build command for unlinking linked lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_UNLINK)
 
     def night_light(self):
         """
