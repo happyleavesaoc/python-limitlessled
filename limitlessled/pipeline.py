@@ -79,7 +79,7 @@ class Pipeline(object):
                   'repeat', 'brightness', 'wait', 'temperature', 'white',
                   'white_up', 'white_down', 'red_up', 'red_down',
                   'green_up', 'green_down', 'blue_up', 'blue_down',
-                  'night_light']
+                  'night_light', 'link', 'unlink']
         for name in stages:
             self._add_stage(name)
 
@@ -188,6 +188,10 @@ class Pipeline(object):
             self._group.blue_down()
         elif stage.name == 'night_light':
             self._group.night_light()
+        elif stage.name == 'link':
+            self._group.link()
+        elif stage.name == 'unlink':
+            self._group.unlink()
         elif stage.name == 'flash':
             self._group.flash(**stage.kwargs)
         elif stage.name == 'repeat':
