@@ -1,6 +1,9 @@
 # Work in progress
 examples/
 
+# asdf config
+.tool-versions
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -83,6 +86,7 @@ celerybeat-schedule
 
 # dotenv
 .env
+.envrc
 
 # virtualenv
 .venv/

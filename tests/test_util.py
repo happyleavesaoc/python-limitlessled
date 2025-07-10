@@ -1,5 +1,6 @@
 import unittest
-from limitlessled import util, Color
+
+from limitlessled import Color, util
 
 
 class TestUtil(unittest.TestCase):

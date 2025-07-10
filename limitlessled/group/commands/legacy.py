@@ -2,9 +2,9 @@
 
 import math
 
+from limitlessled.group.commands import Command, CommandSet
 from limitlessled.group.rgbw import RGBW
 from limitlessled.group.white import WHITE
-from limitlessled.group.commands import CommandSet, Command
 
 
 class CommandLegacy(Command):

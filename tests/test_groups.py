@@ -1,4 +1,5 @@
 import unittest
+
 from limitlessled.bridge import Bridge
 
 

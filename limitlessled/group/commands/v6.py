@@ -2,12 +2,12 @@
 
 import math
 
-from limitlessled.group.rgbw import RGBW, BRIDGE_LED
-from limitlessled.group.rgbww import RGBWW
-from limitlessled.group.wrgb import WRGB
-from limitlessled.group.white import WHITE
+from limitlessled.group.commands import Command, CommandSet
 from limitlessled.group.dimmer import DIMMER
-from limitlessled.group.commands import CommandSet, Command
+from limitlessled.group.rgbw import BRIDGE_LED, RGBW
+from limitlessled.group.rgbww import RGBWW
+from limitlessled.group.white import WHITE
+from limitlessled.group.wrgb import WRGB
 
 
 class CommandV6(Command):

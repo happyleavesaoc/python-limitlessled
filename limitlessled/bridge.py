@@ -1,18 +1,17 @@
 """LimitlessLED Bridge."""
 
 import queue
-import socket
 import select
-import time
+import socket
 import threading
+import time
 
 from limitlessled import MIN_WAIT, REPS
-from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
-from limitlessled.group.wrgb import WrgbGroup, WRGB
-from limitlessled.group.rgbww import RgbwwGroup, RGBWW
-from limitlessled.group.white import WhiteGroup, WHITE
-from limitlessled.group.dimmer import DimmerGroup, DIMMER
-
+from limitlessled.group.dimmer import DIMMER, DimmerGroup
+from limitlessled.group.rgbw import BRIDGE_LED, RGBW, RgbwGroup
+from limitlessled.group.rgbww import RGBWW, RgbwwGroup
+from limitlessled.group.white import WHITE, WhiteGroup
+from limitlessled.group.wrgb import WRGB, WrgbGroup
 
 BRIDGE_PORT = 5987
 BRIDGE_VERSION = 6

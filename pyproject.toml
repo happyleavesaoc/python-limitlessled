@@ -34,6 +34,15 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.lint]
+select = ["I"]
+
+[tool.ruff.lint.isort]
+# Configure isort settings
+known-first-party = ["limitlessled"]
+force-single-line = false
+force-sort-within-sections = true
+
 [tool.tox]
 legacy_tox_ini = """
 [tox]

@@ -5,8 +5,7 @@ import time
 
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
-from limitlessled.util import steps, hue_of_color, saturation_of_color
-
+from limitlessled.util import hue_of_color, saturation_of_color, steps
 
 RGBW = "rgbw"
 BRIDGE_LED = "bridge-led"

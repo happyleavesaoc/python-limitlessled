@@ -1,6 +1,6 @@
 """Utility functions."""
 
-from colorsys import rgb_to_hsv, hsv_to_rgb
+from colorsys import hsv_to_rgb, rgb_to_hsv
 
 from limitlessled import Color
 

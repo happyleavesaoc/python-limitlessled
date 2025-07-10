@@ -3,7 +3,6 @@
 from limitlessled import Color
 from limitlessled.pipeline import Pipeline
 
-
 # Alarm (flash red).
 ALARM = Pipeline().on().color(255, 0, 0).flash().repeat()
 

@@ -1,9 +1,10 @@
 import unittest
+
 from limitlessled.bridge import Bridge
-from limitlessled.group.white import WHITE
-from limitlessled.group.rgbw import RGBW
 from limitlessled.group.commands import Command, CommandSet, command_set_factory
-from limitlessled.group.commands.legacy import CommandSetWhiteLegacy, CommandSetRgbwLegacy
+from limitlessled.group.commands.legacy import CommandSetRgbwLegacy, CommandSetWhiteLegacy
+from limitlessled.group.rgbw import RGBW
+from limitlessled.group.white import WHITE
 
 
 class TestLegacyCommandSetFactory(unittest.TestCase):

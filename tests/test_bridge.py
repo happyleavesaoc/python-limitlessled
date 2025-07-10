@@ -1,7 +1,8 @@
 import unittest
+
 from limitlessled.bridge import Bridge, group_factory
-from limitlessled.group.white import WhiteGroup, WHITE
-from limitlessled.group.rgbw import RgbwGroup, RGBW
+from limitlessled.group.rgbw import RGBW, RgbwGroup
+from limitlessled.group.white import WHITE, WhiteGroup
 
 
 class TestGroupFactory(unittest.TestCase):

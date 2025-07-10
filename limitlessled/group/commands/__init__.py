@@ -11,13 +11,13 @@ def command_set_factory(bridge, group_number, led_type):
     :param led_type: The type of the leds.
     :return: The created command set.
     """
-    from limitlessled.group.commands.legacy import CommandSetWhiteLegacy, CommandSetRgbwLegacy
+    from limitlessled.group.commands.legacy import CommandSetRgbwLegacy, CommandSetWhiteLegacy
     from limitlessled.group.commands.v6 import (
         CommandSetBridgeLightV6,
-        CommandSetWhiteV6,
         CommandSetDimmerV6,
         CommandSetRgbwV6,
         CommandSetRgbwwV6,
+        CommandSetWhiteV6,
         CommandSetWrgbV6,
     )
 

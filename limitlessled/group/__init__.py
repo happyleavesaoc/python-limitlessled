@@ -1,13 +1,13 @@
 """LimitlessLED groups."""
 
 import math
-import time
-import threading
 import queue
+import threading
+import time
 
 from limitlessled import MIN_WAIT, REPS
-from limitlessled.pipeline import Pipeline, PipelineQueue
 from limitlessled.group.commands import command_set_factory
+from limitlessled.pipeline import Pipeline, PipelineQueue
 
 
 def rate(wait=MIN_WAIT, reps=REPS):

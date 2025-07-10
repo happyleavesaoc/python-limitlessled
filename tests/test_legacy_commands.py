@@ -1,9 +1,10 @@
 import unittest
+
 from limitlessled.group.commands.legacy import (
     CommandLegacy,
     CommandSetLegacy,
-    CommandSetWhiteLegacy,
     CommandSetRgbwLegacy,
+    CommandSetWhiteLegacy,
 )
 
 

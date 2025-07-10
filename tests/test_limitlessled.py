@@ -1,4 +1,5 @@
 import unittest
+
 from limitlessled import LimitlessLED
 from limitlessled.bridge import Bridge
 from limitlessled.group.white import WHITE
