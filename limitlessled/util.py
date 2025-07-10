@@ -1,4 +1,4 @@
-""" Utility functions. """
+"""Utility functions."""
 
 from colorsys import rgb_to_hsv, hsv_to_rgb
 
@@ -34,7 +34,7 @@ def to_rgb(hue, saturation):
 
 
 def transition(value, maximum, start, end):
-    """ Transition between two values.
+    """Transition between two values.
 
     :param value: Current iteration.
     :param maximum: Maximum number of iterations.
@@ -46,7 +46,7 @@ def transition(value, maximum, start, end):
 
 
 def steps(current, target, max_steps):
-    """ Steps between two values.
+    """Steps between two values.
 
     :param current: Current value (0.0-1.0).
     :param target: Target value (0.0-1.0).

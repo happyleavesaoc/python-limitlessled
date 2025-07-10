@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/happyleavesaoc/python-limitlessled.svg?branch=master)](https://travis-ci.org/happyleavesaoc/python-limitlessled) [![PyPI version](https://badge.fury.io/py/limitlessled.svg)](https://badge.fury.io/py/limitlessled)
+*Work in progress - a fork of python-limitlessled adding support for newer 8-zone LimitlessLED / Milight etc. bulbs.*
 
-# python-limitlessled
+# python-limitlessled8z
 
 `python-limitlessled` controls LimitlessLED bridges. It supports `white`, `rgbw` and `rgbww` bulb groups as well as the `bridge-led` of newer wifi bridges.
 ## Install
@@ -88,7 +88,7 @@ pipeline = Pipeline() \
     .on() \
     .brightness(0.7) \
     .color(0, 0, 255) \
-    .transition(color=Color(255, 0, 0))
+    .transition(3, color=Color(255, 0, 0))
     
 bedroom.enqueue(pipeline)
 ```

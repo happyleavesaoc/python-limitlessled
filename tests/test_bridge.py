@@ -1,28 +1,25 @@
 import unittest
 from limitlessled.bridge import Bridge, group_factory
 from limitlessled.group.white import WhiteGroup, WHITE
-from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
-from limitlessled.group.rgbww import RgbwwGroup, RGBWW
+from limitlessled.group.rgbw import RgbwGroup, RGBW
 
 
 class TestGroupFactory(unittest.TestCase):
-
     def test_legacy_group_factory(self):
-        bridge = Bridge('localhost', 9999, version=5)
-        white_group = group_factory(bridge, 1, 'test', WHITE)
+        bridge = Bridge("localhost", 9999, version=5)
+        white_group = group_factory(bridge, 1, "test", WHITE)
         self.assertTrue(isinstance(white_group, WhiteGroup))
-        rgbw_group = group_factory(bridge, 2, 'test', RGBW)
+        rgbw_group = group_factory(bridge, 2, "test", RGBW)
         self.assertTrue(isinstance(rgbw_group, RgbwGroup))
         bridge.close()
 
 
 class TestLegacyBridge(unittest.TestCase):
-
     def setUp(self):
-        self.bridge = Bridge('localhost', 9999, version=5)
+        self.bridge = Bridge("localhost", 9999, version=5)
 
     def test_add_group(self):
-        group = self.bridge.add_group(1, 'test', WHITE)
+        group = self.bridge.add_group(1, "test", WHITE)
         self.assertTrue(isinstance(group, WhiteGroup))
 
     def tearDown(self):

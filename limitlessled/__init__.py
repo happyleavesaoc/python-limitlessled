@@ -1,4 +1,4 @@
-""" LimitlessLED.
+"""LimitlessLED.
 
 http://www.limitlessled.com
 """
@@ -20,13 +20,14 @@ Color = namedtuple("Color", "R G B")
 
 
 class LimitlessLED(object):
-    """ Represents a LimitlessLED installation. """
+    """Represents a LimitlessLED installation."""
+
     def __init__(self):
-        """ Initialize. """
+        """Initialize."""
         self._groups = {}
 
     def group(self, name):
-        """ Fetch a named group.
+        """Fetch a named group.
 
         :param name: Name of group.
         :returns: Group.
@@ -34,7 +35,7 @@ class LimitlessLED(object):
         return self._groups[name]
 
     def add_bridge(self, bridge):
-        """ Add bridge groups.
+        """Add bridge groups.
 
         :param bridge: Add groups from this bridge.
         """

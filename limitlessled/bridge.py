@@ -1,11 +1,10 @@
-""" LimitlessLED Bridge. """
+"""LimitlessLED Bridge."""
 
 import queue
 import socket
 import select
 import time
 import threading
-from datetime import datetime, timedelta
 
 from limitlessled import MIN_WAIT, REPS
 from limitlessled.group.rgbw import RgbwGroup, RGBW, BRIDGE_LED
@@ -18,14 +17,39 @@ from limitlessled.group.dimmer import DimmerGroup, DIMMER
 BRIDGE_PORT = 5987
 BRIDGE_VERSION = 6
 BRIDGE_LED_GROUP = 1
-BRIDGE_LED_NAME = 'bridge'
+BRIDGE_LED_NAME = "bridge"
 SELECT_WAIT = 0.025
-BRIDGE_INITIALIZATION_COMMAND = [0x20, 0x00, 0x00, 0x00, 0x16, 0x02, 0x62,
-                                 0x3a, 0xd5, 0xed, 0xa3, 0x01, 0xae, 0x08,
-                                 0x2d, 0x46, 0x61, 0x41, 0xa7, 0xf6, 0xdc,
-                                 0xaf, 0xfe, 0xf7, 0x00, 0x00, 0x1e]
+BRIDGE_INITIALIZATION_COMMAND = [
+    0x20,
+    0x00,
+    0x00,
+    0x00,
+    0x16,
+    0x02,
+    0x62,
+    0x3A,
+    0xD5,
+    0xED,
+    0xA3,
+    0x01,
+    0xAE,
+    0x08,
+    0x2D,
+    0x46,
+    0x61,
+    0x41,
+    0xA7,
+    0xF6,
+    0xDC,
+    0xAF,
+    0xFE,
+    0xF7,
+    0x00,
+    0x00,
+    0x1E,
+]
 KEEP_ALIVE_COMMAND_PREAMBLE = [0xD0, 0x00, 0x00, 0x00, 0x02]
-KEEP_ALIVE_RESPONSE_PREAMBLE = [0xd8, 0x0, 0x0, 0x0, 0x07]
+KEEP_ALIVE_RESPONSE_PREAMBLE = [0xD8, 0x0, 0x0, 0x0, 0x07]
 KEEP_ALIVE_TIME = 5
 RECONNECT_TIME = 5
 SOCKET_TIMEOUT = 5
@@ -33,7 +57,7 @@ STARTING_SEQUENTIAL_BYTE = 0x02
 
 
 def group_factory(bridge, number, name, led_type):
-    """ Make a group.
+    """Make a group.
 
     :param bridge: Member of this bridge.
     :param number: Group number (1-4).
@@ -52,15 +76,16 @@ def group_factory(bridge, number, name, led_type):
     elif led_type == WRGB:
         return WrgbGroup(bridge, number, name)
     else:
-        raise ValueError('Invalid LED type: %s', led_type)
+        raise ValueError("Invalid LED type: %s", led_type)
 
 
 class Bridge(object):
-    """ Represents a LimitlessLED bridge. """
+    """Represents a LimitlessLED bridge."""
 
-    def __init__(self, ip, port=BRIDGE_PORT, version=BRIDGE_VERSION,
-                 bridge_led_name=BRIDGE_LED_NAME):
-        """ Initialize bridge.
+    def __init__(
+        self, ip, port=BRIDGE_PORT, version=BRIDGE_VERSION, bridge_led_name=BRIDGE_LED_NAME
+    ):
+        """Initialize bridge.
 
         Bridge version 6 (latest as of this release)
         can use the default parameters. For lower versions,
@@ -100,8 +125,7 @@ class Bridge(object):
         self._bridge_led = None
         if self.version >= 6:
             # Create bridge led group
-            self._bridge_led = group_factory(self, BRIDGE_LED_GROUP,
-                                             bridge_led_name, BRIDGE_LED)
+            self._bridge_led = group_factory(self, BRIDGE_LED_GROUP, bridge_led_name, BRIDGE_LED)
 
             # Set is_ready to False before initing connection
             self.is_ready = False
@@ -116,36 +140,36 @@ class Bridge(object):
 
     @property
     def sn(self):
-        """ Gets the current sequential byte. """
+        """Gets the current sequential byte."""
         return self._sn
 
     @property
     def wb1(self):
-        """ Gets the bridge session id 1. """
+        """Gets the bridge session id 1."""
         return self._wb1
 
     @property
     def wb2(self):
-        """ Gets the bridge session id 2. """
+        """Gets the bridge session id 2."""
         return self._wb2
 
     @property
     def bridge_led(self):
-        """ Get the group to control the bridge led. """
+        """Get the group to control the bridge led."""
         return self._bridge_led
 
     def incr_active(self):
-        """ Increment number of active groups. """
+        """Increment number of active groups."""
         with self._lock:
             self.active += 1
 
     def decr_active(self):
-        """ Decrement number of active groups. """
+        """Decrement number of active groups."""
         with self._lock:
             self.active -= 1
 
     def add_group(self, number, name, led_type):
-        """ Add a group.
+        """Add a group.
 
         :param number: Group number (1-4).
         :param name: Group name.
@@ -157,7 +181,7 @@ class Bridge(object):
         return group
 
     def send(self, command, reps=REPS, wait=MIN_WAIT):
-        """ Send a command to the physical bridge.
+        """Send a command to the physical bridge.
 
         :param command: A Command instance.
         :param reps: Number of repetitions.
@@ -173,7 +197,7 @@ class Bridge(object):
         time.sleep(sleep)
 
     def _consume(self):
-        """ Consume commands from the queue.
+        """Consume commands from the queue.
 
         The command is repeated according to the configured value.
         Wait after each command is sent.

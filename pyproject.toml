@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "limitlessled8z"
+version = "1.1.4"
+description = "Control LimitlessLED products."
+authors = ["happyleaves <happyleaves.tfr@gmail.com>", "Jerome Boisvert-Chouinard <github@jbchouinard.net>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/jbchouinard/python-limitlessled8z/"
+packages = [
+    { include = "limitlessled" }
+]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "6.2.5"
+pytest-cov = "2.12.1"
+pytest-sugar = "0.9.4"
+twine = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py39,py310,py311,py312,py313
+skip_missing_interpreters = True
+
+[gh-actions]
+python =
+    3.9: py39
+    3.10: py310
+    3.11: py311
+    3.12: py312
+    3.13: py313
+
+[testenv]
+ignore_errors = True
+setenv =
+    LANG=en_US.UTF-8
+    PYTHONPATH={toxinidir}:{toxinidir}/limitlessled
+    PYTHON_ENV=test
+deps =
+    pytest==6.2.5
+    pytest-cov==2.12.1
+    pytest-sugar==0.9.4
+commands =
+    py.test -v --cov-report term-missing --cov limitlessled
+"""

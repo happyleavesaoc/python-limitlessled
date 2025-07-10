@@ -1,4 +1,4 @@
-""" Command sets for wifi bridge version 5 and lower. """
+"""Command sets for wifi bridge version 5 and lower."""
 
 import math
 
@@ -8,14 +8,13 @@ from limitlessled.group.commands import CommandSet, Command
 
 
 class CommandLegacy(Command):
-    """ Represents a single v6 command to be sent to the bridge. """
+    """Represents a single v6 command to be sent to the bridge."""
 
     SUFFIX_BYTE = 0x00
     BRIDGE_SHORT_VERSION_MIN = 3
     BRIDGE_LONG_BYTE = 0x55
 
-    def __init__(self, cmd_1, cmd_2, group_number,
-                 select=False, select_command=None):
+    def __init__(self, cmd_1, cmd_2, group_number, select=False, select_command=None):
         """
         Initialize command.
         :param cmd_1: The first part of the command.
@@ -43,7 +42,7 @@ class CommandLegacy(Command):
 
 
 class CommandSetLegacy(CommandSet):
-    """ Base command set for legacy wifi bridges. """
+    """Base command set for legacy wifi bridges."""
 
     SUPPORTED_VERSIONS = [1, 2, 3, 4, 5]
     BRIGHTNESS_OFFSET = 2
@@ -65,12 +64,11 @@ class CommandSetLegacy(CommandSet):
         :param hue: The hue in decimal percent (0.0-1.0).
         :return: The hue regarding the LimitlessLED color wheel.
         """
-        hue = hue * -1 + 1 + (2.0/3.0)  # RGB -> BGR
+        hue = hue * -1 + 1 + (2.0 / 3.0)  # RGB -> BGR
 
         return int(math.floor((hue % 1) * 256))
 
-    def _build_command(self, cmd_1, cmd_2=None,
-                       select=False, select_command=None):
+    def _build_command(self, cmd_1, cmd_2=None, select=False, select_command=None):
         """
         Constructs the complete command.
         :param cmd_1: Light command 1.
@@ -80,12 +78,11 @@ class CommandSetLegacy(CommandSet):
         :return: The complete command.
         """
 
-        return CommandLegacy(cmd_1, cmd_2,
-                             self._group_number, select, select_command)
+        return CommandLegacy(cmd_1, cmd_2, self._group_number, select, select_command)
 
 
 class CommandSetWhiteLegacy(CommandSetLegacy):
-    """ Command set for white led light connected to legacy wifi bridge. """
+    """Command set for white led light connected to legacy wifi bridge."""
 
     SUPPORTED_LED_TYPES = [WHITE]
     ON_BYTES = [0x38, 0x3D, 0x37, 0x32]
@@ -99,8 +96,9 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
         Initializes the command set.
         :param group_number: The group number.
         """
-        super().__init__(group_number, self.BRIGHTNESS_STEPS,
-                         temperature_steps=self.TEMPERATURE_STEPS)
+        super().__init__(
+            group_number, self.BRIGHTNESS_STEPS, temperature_steps=self.TEMPERATURE_STEPS
+        )
 
     def on(self):
         """
@@ -121,8 +119,9 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
         Build command for turning the led to night light mode.
         :return: The command.
         """
-        return self._build_command(self.NIGHT_BYTES[self._group_number - 1],
-                                   select=True, select_command=self.off())
+        return self._build_command(
+            self.NIGHT_BYTES[self._group_number - 1], select=True, select_command=self.off()
+        )
 
     def dimmer(self):
         """
@@ -154,7 +153,7 @@ class CommandSetWhiteLegacy(CommandSetLegacy):
 
 
 class CommandSetRgbwLegacy(CommandSetLegacy):
-    """ Command set for RGBW led light connected to legacy wifi bridge. """
+    """Command set for RGBW led light connected to legacy wifi bridge."""
 
     SUPPORTED_LED_TYPES = [RGBW]
     HUE_STEPS = 255
@@ -165,8 +164,7 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         Initializes the command set.
         :param group_number: The group number.
         """
-        super().__init__(group_number, self.BRIGHTNESS_STEPS,
-                         hue_steps=self.HUE_STEPS)
+        super().__init__(group_number, self.BRIGHTNESS_STEPS, hue_steps=self.HUE_STEPS)
 
     def on(self):
         """
@@ -187,16 +185,14 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         Build command for turning the led to night light mode.
         :return: The command.
         """
-        return self._build_command(self._offset(0xC6),
-                                   select=True, select_command=self.off())
+        return self._build_command(self._offset(0xC6), select=True, select_command=self.off())
 
     def white(self):
         """
         Build command for turning the led into white mode.
         :return: The command.
         """
-        return self._build_command(self._offset(0xC5),
-                                   select=True, select_command=self.on())
+        return self._build_command(self._offset(0xC5), select=True, select_command=self.on())
 
     def hue(self, hue):
         """
@@ -204,8 +200,9 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         :param hue: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x40, self.convert_hue(hue),
-                                   select=True, select_command=self.on())
+        return self._build_command(
+            0x40, self.convert_hue(hue), select=True, select_command=self.on()
+        )
 
     def brightness(self, brightness):
         """
@@ -213,11 +210,12 @@ class CommandSetRgbwLegacy(CommandSetLegacy):
         :param brightness: Value to set (0.0-1.0).
         :return: The command.
         """
-        return self._build_command(0x4E, self.convert_brightness(brightness),
-                                   select=True, select_command=self.on())
+        return self._build_command(
+            0x4E, self.convert_brightness(brightness), select=True, select_command=self.on()
+        )
 
     def _offset(self, byte):
-        """ Calcuate group command offset.
+        """Calcuate group command offset.
 
         :param byte: Base byte.
         :returns: Appropriate byte for group.

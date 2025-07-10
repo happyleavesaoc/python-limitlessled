@@ -1,4 +1,5 @@
-""" LimtlessLED command sets. """
+"""LimtlessLED command sets."""
+
 import binascii
 
 
@@ -10,32 +11,41 @@ def command_set_factory(bridge, group_number, led_type):
     :param led_type: The type of the leds.
     :return: The created command set.
     """
-    from limitlessled.group.commands.legacy import (
-        CommandSetWhiteLegacy, CommandSetRgbwLegacy)
+    from limitlessled.group.commands.legacy import CommandSetWhiteLegacy, CommandSetRgbwLegacy
     from limitlessled.group.commands.v6 import (
-        CommandSetBridgeLightV6, CommandSetWhiteV6,
-        CommandSetDimmerV6, CommandSetRgbwV6,
-        CommandSetRgbwwV6, CommandSetWrgbV6)
+        CommandSetBridgeLightV6,
+        CommandSetWhiteV6,
+        CommandSetDimmerV6,
+        CommandSetRgbwV6,
+        CommandSetRgbwwV6,
+        CommandSetWrgbV6,
+    )
 
-    command_sets = [CommandSetWhiteLegacy, CommandSetRgbwLegacy,
-                    CommandSetBridgeLightV6, CommandSetWhiteV6,
-                    CommandSetDimmerV6, CommandSetRgbwV6,
-                    CommandSetRgbwwV6, CommandSetWrgbV6]
+    command_sets = [
+        CommandSetWhiteLegacy,
+        CommandSetRgbwLegacy,
+        CommandSetBridgeLightV6,
+        CommandSetWhiteV6,
+        CommandSetDimmerV6,
+        CommandSetRgbwV6,
+        CommandSetRgbwwV6,
+        CommandSetWrgbV6,
+    ]
     try:
-        cls = next(cs for cs in command_sets if
-                   bridge.version in cs.SUPPORTED_VERSIONS and
-                   led_type in cs.SUPPORTED_LED_TYPES)
+        cls = next(
+            cs
+            for cs in command_sets
+            if bridge.version in cs.SUPPORTED_VERSIONS and led_type in cs.SUPPORTED_LED_TYPES
+        )
         return cls(group_number)
     except StopIteration:
-        raise ValueError('There is no command set for '
-                         'specified bridge version and led type.')
+        raise ValueError("There is no command set for specified bridge version and led type.")
 
 
 class Command:
-    """ Base class for a single command to be sent to the bridge. """
+    """Base class for a single command to be sent to the bridge."""
 
-    def __init__(self, cmd_1, cmd_2, group_number,
-                 select=False, select_command=None):
+    def __init__(self, cmd_1, cmd_2, group_number, select=False, select_command=None):
         """
         Initialize command.
         :param cmd_1: The first part of the command.
@@ -52,53 +62,56 @@ class Command:
 
     @property
     def cmd_1(self):
-        """ The first part of the raw command. """
+        """The first part of the raw command."""
         return self._cmd_1
 
     @property
     def cmd_2(self):
-        """ The first part of the raw command. """
+        """The first part of the raw command."""
         return self._cmd_2
 
     @property
     def group_number(self):
-        """ The group number (1-4). """
+        """The group number (1-4)."""
         return self._group_number
 
     @property
     def select(self):
-        """ If command requires selection. """
+        """If command requires selection."""
         return self._select
 
     @property
     def select_command(self):
-        """ Selection command bytes. """
+        """Selection command bytes."""
         return self._select_command
 
     def __eq__(self, other):
-        """ Command equality. """
-        return (self.cmd_1 == other.cmd_1 and
-                self.cmd_2 == other.cmd_2 and
-                self.group_number == other.group_number and
-                self.select == other.select and
-                self.select_command == other.select_command)
+        """Command equality."""
+        return (
+            self.cmd_1 == other.cmd_1
+            and self.cmd_2 == other.cmd_2
+            and self.group_number == other.group_number
+            and self.select == other.select
+            and self.select_command == other.select_command
+        )
 
     def __repr__(self):
-        """ String representation. """
-        return '(cmd_1={}, cmd_2={}, gn={}, s={}, sc={})'.format(
-                    binascii.hexlify(self.cmd_1).decode(),
-                    binascii.hexlify(self.cmd_2).decode(),
-                    self.group_number,
-                    self.select,
-                    self.select_command)
+        """String representation."""
+        return "(cmd_1={}, cmd_2={}, gn={}, s={}, sc={})".format(
+            binascii.hexlify(self.cmd_1).decode(),
+            binascii.hexlify(self.cmd_2).decode(),
+            self.group_number,
+            self.select,
+            self.select_command,
+        )
 
 
 class CommandSet:
-    """ Base class for command sets."""
+    """Base class for command sets."""
 
-    def __init__(self, group_number,
-                 brightness_steps, hue_steps=1,
-                 saturation_steps=1, temperature_steps=1):
+    def __init__(
+        self, group_number, brightness_steps, hue_steps=1, saturation_steps=1, temperature_steps=1
+    ):
         """
         Initializes the command set.
         :param group_number: The group number.

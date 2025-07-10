@@ -3,7 +3,6 @@ from limitlessled import util, Color
 
 
 class TestUtil(unittest.TestCase):
-
     def test_hue_of_color(self):
         red = Color(255, 0, 0)
         self.assertEqual(util.hue_of_color(red), 0.0)
@@ -13,9 +12,9 @@ class TestUtil(unittest.TestCase):
         self.assertEqual(util.saturation_of_color(red), 1.0)
 
     def test_to_rgb(self):
-        red = Color(255, 0, 0)
+        _red = Color(255, 0, 0)
         # TODO: resolve correct values
-        #self.assertEqual(util.to_rgb(0, 1), red)
+        # self.assertEqual(util.to_rgb(0, 1), red)
 
     def test_transition(self):
         self.assertEqual(util.transition(0, 100, 0, 10), 0.0)
