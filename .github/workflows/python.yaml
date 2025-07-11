@@ -1,4 +1,4 @@
-name: Run Python lint checks and tests
+name: Python
 on:
   - push
   - pull_request
