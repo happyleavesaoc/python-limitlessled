@@ -1,10 +1,19 @@
-*Work in progress - a fork of python-limitlessled adding support for newer 8-zone LimitlessLED / Milight etc. bulbs.*
-
 # python-limitlessled8z
 
-`python-limitlessled` controls LimitlessLED bridges. It supports `white`, `rgbw` and `rgbww` bulb groups as well as the `bridge-led` of newer wifi bridges.
+A fork of [python-limitlessled](https://github.com/happyleaves/python-limitlessled) which adds support for RGB-CCT 8 zone LED bulbs and strips.
+
+`python-limitlessled8z` controls LimitlessLED bridges (sold under various brand names such as MiLight, MiBoxer, EasyBulb, etc.).
+It supports `white`, `rgbw`, `rgbww`, and `rgbcct` bulb groups as well as the `bridge-led` of newer wifi bridges.
+
+Bulb types:
+`white`: White bulbs, 4 zones
+`rgbw`: RGB + white bulbs , 4 zones
+`rgbww`: RGB + cool/warm white bulbs, 4 zones
+`rgbcct`: Newer RGB+CCT bulbs and LED strip controllers, 8 zones
+`bridge-led`: Integrated LED on newer WiFi bridges
+
 ## Install
-`pip install limitlessled`
+`pip install limitlessled8z`
 
 ## Usage
 ### Configure
@@ -13,6 +22,7 @@ Your bridge(s) must be set up and bulbs joined prior to using this module.
 Group names can be any string, but must be unique amongst all bridges.
 ```python
 from limitlessled.bridge import Bridge
+from limitlessled.group.rgbcct import RGBCCT
 from limitlessled.group.rgbw import RGBW
 from limitlessled.group.rgbww import RGBWW
 from limitlessled.group.white import WHITE
@@ -23,6 +33,8 @@ bridge.add_group(1, 'bedroom', RGBW)
 bridge.add_group(2, 'bathroom', WHITE)
 bridge.add_group(2, 'living_room', RGBW)
 bridge.add_group(2, 'kitchen', RGBWW)
+# RGBCCT supports up to 8 zones (groups)
+bridge.add_group(6, 'office', RGBCCT)
 ```
 
 Get access to groups either via the return value of `add_group`, or with the `LimitlessLED` object.

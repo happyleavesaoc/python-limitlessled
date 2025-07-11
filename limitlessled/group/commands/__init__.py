@@ -15,6 +15,7 @@ def command_set_factory(bridge, group_number, led_type):
     from limitlessled.group.commands.v6 import (
         CommandSetBridgeLightV6,
         CommandSetDimmerV6,
+        CommandSetRgbcctV6,
         CommandSetRgbwV6,
         CommandSetRgbwwV6,
         CommandSetWhiteV6,
@@ -30,6 +31,7 @@ def command_set_factory(bridge, group_number, led_type):
         CommandSetRgbwV6,
         CommandSetRgbwwV6,
         CommandSetWrgbV6,
+        CommandSetRgbcctV6,
     ]
     try:
         cls = next(

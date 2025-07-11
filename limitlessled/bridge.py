@@ -8,6 +8,7 @@ import time
 
 from limitlessled import MIN_WAIT, REPS
 from limitlessled.group.dimmer import DIMMER, DimmerGroup
+from limitlessled.group.rgbcct import RGBCCT, RgbcctGroup
 from limitlessled.group.rgbw import BRIDGE_LED, RGBW, RgbwGroup
 from limitlessled.group.rgbww import RGBWW, RgbwwGroup
 from limitlessled.group.white import WHITE, WhiteGroup
@@ -74,6 +75,8 @@ def group_factory(bridge, number, name, led_type):
         return DimmerGroup(bridge, number, name)
     elif led_type == WRGB:
         return WrgbGroup(bridge, number, name)
+    elif led_type == RGBCCT:
+        return RgbcctGroup(bridge, number, name)
     else:
         raise ValueError("Invalid LED type: %s", led_type)
 
@@ -114,9 +117,9 @@ class Bridge(object):
         self._selected_number = None
 
         # Start queue consumer thread.
-        consumer = threading.Thread(target=self._consume)
-        consumer.daemon = True
-        consumer.start()
+        self._consumer = threading.Thread(target=self._consume)
+        self._consumer.daemon = True
+        self._consumer.start()
 
         # Version specific stuff
         self._wb1 = None
@@ -336,3 +339,9 @@ class Bridge(object):
         self.is_closed = True
         self.is_ready = False
         self._command_queue.put(None)
+
+    def finish(self, timeout=None):
+        self._command_queue.put(None)
+        self._consumer.join(timeout)
+        self.is_closed = True
+        self.is_ready = False

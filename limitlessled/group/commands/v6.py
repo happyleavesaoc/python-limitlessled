@@ -4,6 +4,7 @@ import math
 
 from limitlessled.group.commands import Command, CommandSet
 from limitlessled.group.dimmer import DIMMER
+from limitlessled.group.rgbcct import RGBCCT
 from limitlessled.group.rgbw import BRIDGE_LED, RGBW
 from limitlessled.group.rgbww import RGBWW
 from limitlessled.group.white import WHITE
@@ -82,6 +83,7 @@ class CommandSetV6(CommandSet):
     MAX_SATURATION = 0x64
     MAX_BRIGHTNESS = 0x64
     MAX_TEMPERATURE = 0x64
+    MAX_ZONE_NUMBER = 4
 
     def __init__(
         self,
@@ -101,6 +103,7 @@ class CommandSetV6(CommandSet):
         :param saturation_steps: The number of saturation steps
         :param temperature_steps: The number of temperature steps.
         """
+        group_number = min(max(group_number, 0), self.MAX_ZONE_NUMBER)
         brightness_steps = brightness_steps or self.MAX_BRIGHTNESS + 1
         hue_steps = hue_steps or self.MAX_HUE + 1
         saturation_steps = saturation_steps or self.MAX_SATURATION + 1
@@ -653,3 +656,92 @@ class CommandSetRgbwwV6(CommandSetV6):
         :return: The command.
         """
         return self._build_command(0x05, self.convert_temperature(temperature))
+
+
+class CommandSetRgbcctV6(CommandSetV6):
+    """Command set for RGBCCT led light connected to wifi bridge v6."""
+
+    SUPPORTED_LED_TYPES = [RGBCCT]
+    REMOTE_STYLE = 0x0A
+    MAX_ZONE_NUMBER = 8
+
+    def __init__(self, group_number):
+        """
+        Initializes the command set.
+        :param group_number: The group number.
+        """
+        super().__init__(group_number, self.REMOTE_STYLE)
+
+    def on(self):
+        """
+        Build command for turning the led on.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x01)
+
+    def off(self):
+        """
+        Build command for turning the led off.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x02)
+
+    def link(self):
+        """
+        Build command for linking new lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_LINK)
+
+    def unlink(self):
+        """
+        Build command for unlinking linked lights.
+        :return: The command.
+        """
+        return self._build_command(0x00, 0x00, command_type=CommandV6.TYPE_UNLINK)
+
+    def night_light(self):
+        """
+        Build command for turning the led into night light mode.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x64)
+
+    def white(self):
+        """
+        Build command for turning the led into white mode.
+        :return: The command.
+        """
+        return self._build_command(0x06, 0x05)
+
+    def hue(self, hue):
+        """
+        Build command for setting the hue of the led.
+        :param hue: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x01, self.convert_hue(hue))
+
+    def saturation(self, saturation):
+        """
+        Build command for setting the saturation of the led.
+        :param saturation: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x03, self.convert_saturation(saturation))
+
+    def brightness(self, brightness):
+        """
+        Build command for setting the brightness of the led.
+        :param brightness: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x04, self.convert_brightness(brightness))
+
+    def temperature(self, temperature):
+        """
+        Build command for setting the temperature of the led.
+        :param temperature: Value to set (0.0-1.0).
+        :return: The command.
+        """
+        return self._build_command(0x02, self.convert_temperature(temperature))

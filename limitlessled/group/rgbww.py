@@ -12,10 +12,10 @@ RGB_WHITE = Color(255, 255, 255)
 
 
 class RgbwwGroup(Group):
-    """RGBW LimitlessLED group."""
+    """RGBWW LimitlessLED group."""
 
     def __init__(self, bridge, number, name):
-        """Initialize RGBW group.
+        """Initialize RGBWW group.
 
         :param bridge: Associated bridge.
         :param number: Group number (1-4).
