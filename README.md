@@ -1,6 +1,6 @@
 # python-limitlessled8z
 
-A fork of [python-limitlessled](https://github.com/happyleaves/python-limitlessled) which adds support for RGB-CCT 8 zone LED bulbs and strips.
+A fork of [python-limitlessled](https://github.com/happyleavesaoc/python-limitlessled) which adds support for RGB-CCT 8 zone LED bulbs and strips.
 
 `python-limitlessled8z` controls LimitlessLED bridges (sold under various brand names such as MiLight, MiBoxer, EasyBulb, etc.).
 It supports `white`, `rgbw`, `rgbww`, and `rgbcct` bulb groups as well as the `bridge-led` of newer wifi bridges.
