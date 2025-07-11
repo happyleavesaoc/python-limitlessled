@@ -1,11 +1,9 @@
-# python-limitlessled8z
+# python-limitlessled
 
-[![PyPI version](https://img.shields.io/pypi/v/limitlessled8z.svg)](https://pypi.org/project/limitlessled8z/)
-[![Python Tests](https://github.com/jbchouinard/python-limitlessled8z/actions/workflows/python.yaml/badge.svg)](https://github.com/jbchouinard/python-limitlessled8z/actions/workflows/python.yaml)
+[![PyPI version](https://img.shields.io/pypi/v/litmitlessled.svg)](https://pypi.org/project/limitlessled/)
+[![Python Tests](https://github.com/happyleavesaoc/python-limitlessled/actions/workflows/python.yaml/badge.svg)](https://github.com/happyleavesaoc/python-limitlessled/actions/workflows/python.yaml)
 
-A fork of [python-limitlessled](https://github.com/happyleavesaoc/python-limitlessled) which adds support for RGB-CCT 8 zone LED bulbs and strips.
-
-`python-limitlessled8z` controls LimitlessLED bridges (sold under various brand names such as MiLight, MiBoxer, EasyBulb, etc.).
+`python-limitlessled` controls LimitlessLED bridges (sold under various brand names such as MiLight, MiBoxer, EasyBulb, etc.).
 It supports `white`, `rgbw`, `rgbww`, and `rgbcct` bulb groups as well as the `bridge-led` of newer wifi bridges.
 
 Light types:
@@ -16,7 +14,7 @@ Light types:
 - `bridge-led`: Integrated LED on newer WiFi bridges
 
 ## Install
-`pip install limitlessled8z`
+`pip install limitlessled`
 
 ## Usage
 ### Configure

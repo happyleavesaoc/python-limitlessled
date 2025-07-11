@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "limitlessled8z"
+name = "limitlessled"
 version = "1.2.0"
 description = "Control LimitlessLED, Milight, etc. products."
 authors = ["happyleaves <happyleaves.tfr@gmail.com>", "Jerome Boisvert-Chouinard <github@jbchouinard.net>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/jbchouinard/python-limitlessled8z/"
+repository = "https://github.com/happyleavesaoc/python-limitlessled/"
 packages = [
     { include = "limitlessled" }
 ]
