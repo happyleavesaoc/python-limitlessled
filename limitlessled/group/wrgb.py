@@ -1,22 +1,21 @@
-""" RGBW LimitlessLED group. """
+"""RGBW LimitlessLED group."""
 
 import math
 import time
 
 from limitlessled import Color, util
 from limitlessled.group import Group, rate
-from limitlessled.util import steps, hue_of_color
+from limitlessled.util import hue_of_color, steps
 
-
-WRGB = 'wrgb'
+WRGB = "wrgb"
 RGB_WHITE = Color(255, 255, 255)
 
 
 class WrgbGroup(Group):
-    """ WRGB LimitlessLED group. """
+    """WRGB LimitlessLED group."""
 
     def __init__(self, bridge, number, name):
-        """ Initialize WRGB group.
+        """Initialize WRGB group.
 
         :param bridge: Associated bridge.
         :param number: Group number (1-4).
@@ -28,7 +27,7 @@ class WrgbGroup(Group):
 
     @property
     def color(self):
-        """ Color property.
+        """Color property.
 
         :returns: Color.
         """
@@ -36,7 +35,7 @@ class WrgbGroup(Group):
 
     @color.setter
     def color(self, color):
-        """ Set group color.
+        """Set group color.
 
         Color is set on a best-effort basis.
 
@@ -49,19 +48,19 @@ class WrgbGroup(Group):
         self.hue = hue_of_color(color)
 
     def white(self):
-        """ Set color to white. """
+        """Set color to white."""
         self._color = RGB_WHITE
         cmd = self.command_set.white()
         self.send(cmd)
 
     def night_light(self):
-        """ Set night light mode. """
+        """Set night light mode."""
         cmd = self.command_set.night_light()
         self.send(cmd)
 
     @property
     def brightness(self):
-        """ Brightness property.
+        """Brightness property.
 
         :returns: Brightness.
         """
@@ -69,20 +68,19 @@ class WrgbGroup(Group):
 
     @brightness.setter
     def brightness(self, brightness):
-        """ Set the group brightness.
+        """Set the group brightness.
 
         :param brightness: Brightness in decimal percent (0.0-1.0).
         """
         if brightness < 0 or brightness > 1:
-            raise ValueError("Brightness must be a percentage "
-                             "represented as decimal 0-1.0")
+            raise ValueError("Brightness must be a percentage represented as decimal 0-1.0")
         self._brightness = brightness
         cmd = self.command_set.brightness(brightness)
         self.send(cmd)
 
     @property
     def hue(self):
-        """ Hue property.
+        """Hue property.
 
         :returns: Hue.
         """
@@ -90,67 +88,66 @@ class WrgbGroup(Group):
 
     @hue.setter
     def hue(self, hue):
-        """ Set the group hue.
+        """Set the group hue.
 
         :param hue: Hue in decimal percent (0.0-1.0).
         """
         if hue < 0 or hue > 1:
-            raise ValueError("Hue must be a percentage "
-                             "represented as decimal 0-1.0")
+            raise ValueError("Hue must be a percentage represented as decimal 0-1.0")
         self._hue = hue
         cmd = self.command_set.hue(hue)
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def white_up(self):
-        """ Increase white channel. """
+        """Increase white channel."""
         cmd = self.command_set.white_up()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def white_down(self):
-        """ Decrease white channel. """
+        """Decrease white channel."""
         cmd = self.command_set.white_down()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def red_up(self):
-        """ Increase red channel. """
+        """Increase red channel."""
         cmd = self.command_set.red_up()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def red_down(self):
-        """ Decrease red channel. """
+        """Decrease red channel."""
         cmd = self.command_set.red_down()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def green_up(self):
-        """ Increase green channel. """
+        """Increase green channel."""
         cmd = self.command_set.green_up()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def green_down(self):
-        """ Decrease green channel. """
+        """Decrease green channel."""
         cmd = self.command_set.green_down()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def blue_up(self):
-        """ Increase blue channel. """
+        """Increase blue channel."""
         cmd = self.command_set.blue_up()
         self.send(cmd)
 
     @rate(wait=0.025, reps=1)
     def blue_down(self):
-        """ Decrease blue channel. """
+        """Decrease blue channel."""
         cmd = self.command_set.blue_down()
         self.send(cmd)
 
     def transition(self, duration, color=None, brightness=None):
-        """ Transition wrapper.
+        """Transition wrapper.
 
         Short-circuit transition as necessary.
 
@@ -184,7 +181,7 @@ class WrgbGroup(Group):
 
     @rate(wait=0.025, reps=1)
     def _transition(self, duration, hue=None, brightness=None):
-        """ Transition.
+        """Transition.
 
         :param duration: Time to transition.
         :param hue: Transition to this hue.
@@ -193,14 +190,12 @@ class WrgbGroup(Group):
         # Calculate brightness steps.
         b_steps = 0
         if brightness is not None:
-            b_steps = steps(self.brightness,
-                            brightness, self.command_set.brightness_steps)
+            b_steps = steps(self.brightness, brightness, self.command_set.brightness_steps)
             b_start = self.brightness
         # Calculate hue steps.
         h_steps = 0
         if hue is not None:
-            h_steps = steps(self.hue,
-                            hue, self.command_set.hue_steps)
+            h_steps = steps(self.hue, hue, self.command_set.hue_steps)
             h_start = self.hue
         # Compute ideal step amount (at least one).
         total_steps = max(b_steps, h_steps, 1)
@@ -209,18 +204,15 @@ class WrgbGroup(Group):
         wait = self._wait(duration, total_steps, total_commands)
         # Scale down steps if no wait time.
         if wait == 0:
-            b_steps, h_steps = self._scale_steps(duration, total_commands,
-                                                 b_steps, h_steps)
+            b_steps, h_steps = self._scale_steps(duration, total_commands, b_steps, h_steps)
             total_steps = max(b_steps, h_steps, 1)
         # Perform transition.
         for i in range(total_steps):
             # Brightness.
-            if b_steps > 0 and i % math.ceil(total_steps/b_steps) == 0:
-                self.brightness = util.transition(i, total_steps,
-                                                  b_start, brightness)
+            if b_steps > 0 and i % math.ceil(total_steps / b_steps) == 0:
+                self.brightness = util.transition(i, total_steps, b_start, brightness)
             # Hue.
-            if h_steps > 0 and i % math.ceil(total_steps/h_steps) == 0:
-                self.hue = util.transition(i, total_steps,
-                                           h_start, hue)
+            if h_steps > 0 and i % math.ceil(total_steps / h_steps) == 0:
+                self.hue = util.transition(i, total_steps, h_start, hue)
             # Wait.
             time.sleep(wait)

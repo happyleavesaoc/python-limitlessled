@@ -1,8 +1,18 @@
-[![Build Status](https://travis-ci.org/happyleavesaoc/python-limitlessled.svg?branch=master)](https://travis-ci.org/happyleavesaoc/python-limitlessled) [![PyPI version](https://badge.fury.io/py/limitlessled.svg)](https://badge.fury.io/py/limitlessled)
-
 # python-limitlessled
 
-`python-limitlessled` controls LimitlessLED bridges. It supports `white`, `rgbw` and `rgbww` bulb groups as well as the `bridge-led` of newer wifi bridges.
+[![PyPI version](https://img.shields.io/pypi/v/litmitlessled.svg)](https://pypi.org/project/limitlessled/)
+[![Python Tests](https://github.com/happyleavesaoc/python-limitlessled/actions/workflows/python.yaml/badge.svg)](https://github.com/happyleavesaoc/python-limitlessled/actions/workflows/python.yaml)
+
+`python-limitlessled` controls LimitlessLED bridges (sold under various brand names such as MiLight, MiBoxer, EasyBulb, etc.).
+It supports `white`, `rgbw`, `rgbww`, and `rgbcct` bulb groups as well as the `bridge-led` of newer wifi bridges.
+
+Light types:
+- `white`: White bulbs, 4 zones
+- `rgbw`: RGB + white bulbs , 4 zones
+- `rgbww`: RGB + cool/warm white bulbs, 4 zones
+- `rgbcct`: Newer RGB+CCT bulbs and LED strip controllers, 8 zones
+- `bridge-led`: Integrated LED on newer WiFi bridges
+
 ## Install
 `pip install limitlessled`
 
@@ -13,6 +23,7 @@ Your bridge(s) must be set up and bulbs joined prior to using this module.
 Group names can be any string, but must be unique amongst all bridges.
 ```python
 from limitlessled.bridge import Bridge
+from limitlessled.group.rgbcct import RGBCCT
 from limitlessled.group.rgbw import RGBW
 from limitlessled.group.rgbww import RGBWW
 from limitlessled.group.white import WHITE
@@ -23,6 +34,8 @@ bridge.add_group(1, 'bedroom', RGBW)
 bridge.add_group(2, 'bathroom', WHITE)
 bridge.add_group(2, 'living_room', RGBW)
 bridge.add_group(2, 'kitchen', RGBWW)
+# RGBCCT supports up to 8 zones (groups)
+bridge.add_group(6, 'office', RGBCCT)
 ```
 
 Get access to groups either via the return value of `add_group`, or with the `LimitlessLED` object.
@@ -88,7 +101,7 @@ pipeline = Pipeline() \
     .on() \
     .brightness(0.7) \
     .color(0, 0, 255) \
-    .transition(color=Color(255, 0, 0))
+    .transition(3, color=Color(255, 0, 0))
     
 bedroom.enqueue(pipeline)
 ```

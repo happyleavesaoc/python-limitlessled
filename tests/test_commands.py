@@ -1,37 +1,38 @@
 import unittest
+
 from limitlessled.bridge import Bridge
-from limitlessled.group.white import WHITE
-from limitlessled.group.rgbw import RGBW
 from limitlessled.group.commands import Command, CommandSet, command_set_factory
-from limitlessled.group.commands.legacy import CommandSetWhiteLegacy, CommandSetRgbwLegacy
+from limitlessled.group.commands.legacy import CommandSetRgbwLegacy, CommandSetWhiteLegacy
+from limitlessled.group.rgbw import RGBW
+from limitlessled.group.white import WHITE
 
 
 class TestLegacyCommandSetFactory(unittest.TestCase):
-
     def setUp(self):
-        self.bridge = Bridge('localhost', 9999, version=5)
+        self.bridge = Bridge("localhost", 9999, version=5)
 
     def test_legacy_white_command_set_factory(self):
-        self.assertTrue(isinstance(command_set_factory(self.bridge, 1, WHITE), CommandSetWhiteLegacy))
+        self.assertTrue(
+            isinstance(command_set_factory(self.bridge, 1, WHITE), CommandSetWhiteLegacy)
+        )
 
     def test_legacy_rgbw_command_set_factory(self):
         self.assertTrue(isinstance(command_set_factory(self.bridge, 1, RGBW), CommandSetRgbwLegacy))
 
     def test_bad_command_set_factory(self):
         with self.assertRaises(ValueError):
-            command_set_factory(self.bridge, 1, 'bad')
+            command_set_factory(self.bridge, 1, "bad")
 
 
 class TestCommand(unittest.TestCase):
-
     def setUp(self):
-        self.command = Command(b'\x00', b'\x01', 1, select=True, select_command=None)
+        self.command = Command(b"\x00", b"\x01", 1, select=True, select_command=None)
 
     def test_cmd_1(self):
-        self.assertEqual(self.command.cmd_1, b'\x00')
+        self.assertEqual(self.command.cmd_1, b"\x00")
 
     def test_cmd_2(self):
-        self.assertEqual(self.command.cmd_2, b'\x01')
+        self.assertEqual(self.command.cmd_2, b"\x01")
 
     def test_group_number(self):
         self.assertEqual(self.command.group_number, 1)
@@ -44,7 +45,6 @@ class TestCommand(unittest.TestCase):
 
 
 class TestCommandSet(unittest.TestCase):
-
     def setUp(self):
         self.commandset = CommandSet(1, 10)
 
